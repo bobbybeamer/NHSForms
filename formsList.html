@@ -12,6 +12,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <style>
+        .search-wrap {
+            position: relative;
+            flex: 1 1 220px;
+        }
+        .search-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--brand-text-muted);
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            min-height: 44px;
+            padding: 0 14px 0 40px;
+            border: 1px solid var(--brand-border);
+            border-radius: 999px;
+            background: #ffffff;
+            font-family: 'Manrope', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--brand-text);
+        }
+        .search-input::placeholder { color: var(--brand-text-muted); font-weight: 400; }
+        .search-input:focus { outline: 2px solid var(--brand-primary); outline-offset: 1px; }
+
+        .empty-state {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--brand-text-muted);
+            display: none;
+        }
+        .empty-state strong {
+            display: block;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--brand-text);
+            margin-bottom: 6px;
+        }
+
+        tbody tr.is-hidden { display: none; }
+
+        .filters-panel { align-items: center; }
+
+        .action-open   { color: var(--brand-primary); font-weight: 800; }
+        .action-view   { color: var(--brand-text-muted); font-weight: 800; }
+        .action-track  { color: var(--brand-success); font-weight: 800; }
+        .action-update { color: var(--brand-warning); font-weight: 800; }
+        a.action-open:hover, a.action-view:hover,
+        a.action-track:hover, a.action-update:hover { text-decoration: underline; }
+    </style>
 </head>
 <body class="app-page">
     <div class="app-shell">
@@ -38,37 +91,48 @@
                 </div>
                 <div class="stat-strip" aria-label="Summary metrics">
                     <div class="stat-card">
-                        <strong>27</strong>
-                        <span>Total active</span>
+                        <strong id="stat-total">5</strong>
+                        <span>Showing</span>
                     </div>
                     <div class="stat-card">
-                        <strong>9</strong>
-                        <span>Pending updates</span>
+                        <strong>2</strong>
+                        <span>Pending</span>
                     </div>
                     <div class="stat-card">
-                        <strong>5</strong>
-                        <span>Approved today</span>
+                        <strong>2</strong>
+                        <span>Approved</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>1</strong>
+                        <span>In review</span>
                     </div>
                 </div>
             </section>
 
-            <section class="surface-panel filters-panel">
-                <button type="button" class="filter-chip is-selected">All requesters</button>
-                <button type="button" class="filter-chip">Tender waivers</button>
-                <button type="button" class="filter-chip">Quotation waivers</button>
-                <button type="button" class="filter-chip">Pending only</button>
+            <!-- Filters + search -->
+            <section class="surface-panel filters-panel" style="gap:16px;flex-wrap:wrap">
+                <div style="display:flex;flex-wrap:wrap;gap:8px" role="group" aria-label="Filter by type">
+                    <button type="button" class="filter-chip is-selected" data-filter="all">All</button>
+                    <button type="button" class="filter-chip" data-filter="tender">Tender waivers</button>
+                    <button type="button" class="filter-chip" data-filter="quotation">Quotation waivers</button>
+                    <button type="button" class="filter-chip" data-filter="pending">Pending only</button>
+                </div>
+                <div class="search-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input id="form-search" class="search-input" type="search" placeholder="Search by code, requester, or type&hellip;" aria-label="Search forms">
+                </div>
             </section>
 
             <section class="surface-panel table-panel">
                 <div class="table-panel-header">
                     <div>
-                        <h2>All forms</h2>
-                        <p>Sample records shown below. Replace with live data when the backend is ready.</p>
+                        <h2 id="table-heading">All forms</h2>
+                        <p id="table-subheading">Showing all submitted records. Use the filters above to narrow the list.</p>
                     </div>
-                    <a class="secondary-action" href="forms.html">Open form templates</a>
+                    <a class="secondary-action" href="newForm.html">New request</a>
                 </div>
                 <div class="table-responsive">
-                    <table class="table app-table">
+                    <table class="table app-table" id="forms-table">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -80,57 +144,122 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
+                        <tbody id="forms-tbody">
+                            <!-- data-type: tender | quotation   data-status: pending | approved | review | overdue -->
+                            <tr data-type="tender" data-status="pending" data-requester="Jane Jones" data-code="TWJ0001">
                                 <td>TWJ0001</td>
                                 <td>Tender Waiver Justification</td>
                                 <td>Jane Jones</td>
                                 <td>01 Jan 2023</td>
                                 <td><span class="status-pill status-pending">Pending</span></td>
                                 <td>Awaiting final commercial review.</td>
-                                <td><a class="table-link" href="newForm.html">Open</a></td>
+                                <td><a class="action-open" href="SFI - Tender Waiver Justification.html">Open</a></td>
                             </tr>
-                            <tr>
+                            <tr data-type="tender" data-status="approved" data-requester="Mary Martin" data-code="TWR0002">
                                 <td>TWR0002</td>
                                 <td>Tender Waiver Recommendation</td>
                                 <td>Mary Martin</td>
                                 <td>09 Jan 2023</td>
                                 <td><span class="status-pill status-approved">Approved</span></td>
                                 <td>Approved and ready for filing.</td>
-                                <td><a class="table-link" href="newForm.html">View</a></td>
+                                <td><a class="action-view" href="newForm.html">View</a></td>
                             </tr>
-                            <tr>
+                            <tr data-type="tender" data-status="approved" data-requester="Sarah Moore" data-code="TWJ0003">
                                 <td>TWJ0003</td>
                                 <td>Tender Waiver Justification</td>
                                 <td>Sarah Moore</td>
                                 <td>04 May 2023</td>
                                 <td><span class="status-pill status-approved">Approved</span></td>
                                 <td>Approved with budget note attached.</td>
-                                <td><a class="table-link" href="newForm.html">View</a></td>
+                                <td><a class="action-view" href="SFI - Tender Waiver Justification.html">View</a></td>
                             </tr>
-                            <tr>
+                            <tr data-type="quotation" data-status="pending" data-requester="James Taylor" data-code="QWJ0004">
                                 <td>QWJ0004</td>
                                 <td>Quotation Waiver Justification</td>
                                 <td>James Taylor</td>
                                 <td>01 Jun 2023</td>
                                 <td><span class="status-pill status-pending">Pending</span></td>
                                 <td>Needs supporting market evidence.</td>
-                                <td><a class="table-link" href="newForm.html">Update</a></td>
+                                <td><a class="action-update" href="newForm.html">Update</a></td>
                             </tr>
-                            <tr>
+                            <tr data-type="quotation" data-status="review" data-requester="Jane Jones" data-code="QWR0005">
                                 <td>QWR0005</td>
                                 <td>Quotation Waiver Recommendation</td>
                                 <td>Jane Jones</td>
                                 <td>15 Jun 2023</td>
                                 <td><span class="status-pill status-review">In review</span></td>
                                 <td>Under procurement team review.</td>
-                                <td><a class="table-link" href="newForm.html">Track</a></td>
+                                <td><a class="action-track" href="approvalDetail.html">Track</a></td>
                             </tr>
                         </tbody>
                     </table>
+                    <div class="empty-state" id="empty-state">
+                        <strong>No forms match your search</strong>
+                        Try a different filter or clear the search box.
+                    </div>
                 </div>
             </section>
         </main>
     </div>
+
+    <script>
+        var filterBtns  = document.querySelectorAll('[data-filter]');
+        var searchInput = document.getElementById('form-search');
+        var rows        = document.querySelectorAll('#forms-tbody tr');
+        var emptyState  = document.getElementById('empty-state');
+        var statTotal   = document.getElementById('stat-total');
+        var tableHeading    = document.getElementById('table-heading');
+        var tableSubheading = document.getElementById('table-subheading');
+
+        var activeFilter = 'all';
+
+        var FILTER_LABELS = {
+            all:       { heading: 'All forms',              sub: 'Showing all submitted records. Use the filters above to narrow the list.' },
+            tender:    { heading: 'Tender waiver forms',    sub: 'Showing Tender Waiver Justification and Recommendation records only.' },
+            quotation: { heading: 'Quotation waiver forms', sub: 'Showing Quotation Waiver Justification and Recommendation records only.' },
+            pending:   { heading: 'Pending forms',          sub: 'Showing records that are still awaiting a decision or update.' }
+        };
+
+        function applyFilters() {
+            var searchTerm = searchInput.value.trim().toLowerCase();
+            var visible    = 0;
+
+            rows.forEach(function(row) {
+                var typeMatch   = activeFilter === 'all'
+                               || (activeFilter === 'tender'    && row.dataset.type   === 'tender')
+                               || (activeFilter === 'quotation' && row.dataset.type   === 'quotation')
+                               || (activeFilter === 'pending'   && row.dataset.status === 'pending');
+
+                var searchMatch = !searchTerm
+                               || row.dataset.code.toLowerCase().includes(searchTerm)
+                               || row.dataset.requester.toLowerCase().includes(searchTerm)
+                               || row.querySelector('td:nth-child(2)').textContent.toLowerCase().includes(searchTerm);
+
+                var show = typeMatch && searchMatch;
+                row.classList.toggle('is-hidden', !show);
+                if (show) visible++;
+            });
+
+            statTotal.textContent = visible;
+            emptyState.style.display = visible === 0 ? 'block' : 'none';
+
+            var label = FILTER_LABELS[activeFilter];
+            tableHeading.textContent    = label.heading;
+            tableSubheading.textContent = searchTerm
+                ? visible + ' result' + (visible !== 1 ? 's' : '') + ' for \u201c' + searchInput.value.trim() + '\u201d'
+                : label.sub;
+        }
+
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(function(b) { b.classList.remove('is-selected'); });
+                this.classList.add('is-selected');
+                activeFilter = this.dataset.filter;
+                applyFilters();
+            });
+        });
+
+        searchInput.addEventListener('input', applyFilters);
+    </script>
 </body>
 </html>
