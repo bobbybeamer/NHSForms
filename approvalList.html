@@ -53,10 +53,10 @@
             </section>
 
             <section class="surface-panel filters-panel">
-                <button type="button" class="filter-chip is-selected">All approvers</button>
-                <button type="button" class="filter-chip">Priority review</button>
-                <button type="button" class="filter-chip">Due this week</button>
-                <button type="button" class="filter-chip">Needs clarification</button>
+                <button type="button" class="filter-chip is-selected" data-filter="all">All approvers</button>
+                <button type="button" class="filter-chip" data-filter="priority">Priority review</button>
+                <button type="button" class="filter-chip" data-filter="week">Due this week</button>
+                <button type="button" class="filter-chip" data-filter="clarification">Needs clarification</button>
             </section>
 
             <section class="surface-panel table-panel">
@@ -80,8 +80,9 @@
                                 <th>Decision</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
+                        <tbody id="approval-tbody">
+                            <!-- data-status: pending | review | overdue   data-priority: normal | high -->
+                            <tr data-status="pending" data-priority="normal">
                                 <td><a class="table-link" href="approvalDetail.html">TWJ0001</a></td>
                                 <td>Tender Waiver Justification</td>
                                 <td>Michael Mann</td>
@@ -97,10 +98,10 @@
                                         <span class="wri-label">2 / 5</span>
                                     </div>
                                 </td>
-                                <td>Approver 1</td>
-                                <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Approve</a><a class="table-link table-link-muted" href="approvalDetail.html">Deny</a></span></td>
+                                <td>Mary Saveley</td>
+                                <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Review</a><a class="table-link table-link-muted" href="approvalDetail.html">Deny</a></span></td>
                             </tr>
-                            <tr>
+                            <tr data-status="review" data-priority="normal">
                                 <td><a class="table-link" href="approvalDetail.html">QWJ0007</a></td>
                                 <td>Quotation Waiver Justification</td>
                                 <td>Sophie Hunt</td>
@@ -116,10 +117,10 @@
                                         <span class="wri-label">3 / 5</span>
                                     </div>
                                 </td>
-                                <td>Approver 4</td>
+                                <td>Mary Saveley</td>
                                 <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Review</a><a class="table-link table-link-muted" href="approvalDetail.html">Hold</a></span></td>
                             </tr>
-                            <tr>
+                            <tr data-status="overdue" data-priority="high">
                                 <td><a class="table-link" href="approvalDetail.html">TWR0012</a></td>
                                 <td>Tender Waiver Recommendation</td>
                                 <td>John Smith</td>
@@ -135,7 +136,7 @@
                                         <span class="wri-label">2 / 5</span>
                                     </div>
                                 </td>
-                                <td>Approver 2</td>
+                                <td>Michael Holz</td>
                                 <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Escalate</a><a class="table-link table-link-muted" href="approvalDetail.html">Deny</a></span></td>
                             </tr>
                         </tbody>
@@ -144,5 +145,31 @@
             </section>
         </main>
     </div>
+
+    <style>
+        #approval-tbody tr.is-hidden { display: none; }
+        .decision-actions { display: flex; gap: 12px; }
+    </style>
+
+    <script>
+        var filterBtns = document.querySelectorAll('.filters-panel [data-filter]');
+        var rows       = document.querySelectorAll('#approval-tbody tr');
+
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(function(b) { b.classList.remove('is-selected'); });
+                this.classList.add('is-selected');
+                var filter = this.dataset.filter;
+
+                rows.forEach(function(row) {
+                    var show = filter === 'all'
+                        || (filter === 'priority'      && row.dataset.priority === 'high')
+                        || (filter === 'week'          && (row.dataset.status === 'pending' || row.dataset.status === 'overdue'))
+                        || (filter === 'clarification' && row.dataset.status === 'review');
+                    row.classList.toggle('is-hidden', !show);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -98,16 +98,19 @@
                             </div>
                         </div>
 
-                        <div class="form-field" style="margin-bottom:18px">
+                        <div class="form-field" style="margin-bottom:18px" id="decision-field">
                             <label for="decision-note">Decision note <span style="font-weight:400;color:var(--brand-text-muted)">(optional)</span></label>
                             <textarea id="decision-note" name="decision-note" rows="4" placeholder="Add context, conditions, or reasons for your decision. This will be recorded in the audit trail."></textarea>
                         </div>
 
-                        <div class="form-actions-row">
-                            <a class="primary-action" href="approvalList.html">Approve &amp; advance</a>
-                            <a class="secondary-action" href="approvalList.html">Request more information</a>
-                            <a class="danger-action" href="approvalList.html">Deny request</a>
+                        <div class="form-actions-row" id="decision-actions">
+                            <button type="button" class="primary-action" onclick="approveAndAdvance()">Approve &amp; advance</button>
+                            <button type="button" class="secondary-action" onclick="requestMoreInfo()">Request more information</button>
+                            <button type="button" class="danger-action" onclick="denyRequest()">Deny request</button>
                         </div>
+
+                        <!-- Post-decision confirmation (hidden by default) -->
+                        <div id="decision-confirm" style="display:none;margin-top:24px;padding:20px;border-radius:12px;border:1px solid var(--brand-border)"></div>
                     </section>
 
                     <!-- Audit trail -->
@@ -239,5 +242,139 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // ── Approval decision simulation ──────────────────────────────────
+        function getNoteText(fallback) {
+            var note = document.getElementById('decision-note').value.trim();
+            return note || fallback;
+        }
+
+        function hideActionPanel() {
+            document.getElementById('decision-field').style.display  = 'none';
+            document.getElementById('decision-actions').style.display = 'none';
+        }
+
+        function showConfirmationPanel(bgColour, borderColour, textColour, heading, body, nextLink, nextLabel) {
+            var panel = document.getElementById('decision-confirm');
+            panel.style.display  = 'block';
+            panel.style.background   = bgColour;
+            panel.style.borderColor  = borderColour;
+            panel.innerHTML =
+                '<strong style="display:block;font-size:15px;font-weight:800;color:' + textColour + ';margin-bottom:6px">' + heading + '</strong>' +
+                '<p style="margin:0 0 14px;color:var(--brand-text-muted)">' + body + '</p>' +
+                '<div class="form-actions-row" style="margin-top:0">' +
+                    '<a class="primary-action" href="' + nextLink + '">' + nextLabel + '</a>' +
+                    '<a class="secondary-action" href="approvalList.html">Back to approval list</a>' +
+                '</div>';
+        }
+
+        function addAuditEntry(initials, name, pillClass, pillText, comment) {
+            var history = document.querySelector('.approval-history');
+            var entry   = document.createElement('div');
+            entry.className = 'history-entry';
+            var now     = new Date();
+            var dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+                          ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            entry.innerHTML =
+                '<div class="history-avatar" aria-hidden="true">' + initials + '</div>' +
+                '<div class="history-body">' +
+                    '<div class="history-meta">' +
+                        '<span class="history-name">' + name + '</span>' +
+                        '<span class="status-pill ' + pillClass + '" style="font-size:11px">' + pillText + '</span>' +
+                        '<span class="history-time">' + dateStr + '</span>' +
+                    '</div>' +
+                    '<p>' + comment + '</p>' +
+                '</div>';
+            history.appendChild(entry);
+        }
+
+        function approveAndAdvance() {
+            // Advance stepper: step 2 → complete, step 3 → active
+            var steps = document.querySelectorAll('.workflow-step');
+            steps[1].classList.remove('is-active');
+            steps[1].classList.add('is-complete');
+            steps[1].querySelector('.step-dot').innerHTML = '&#10003;';
+            steps[1].querySelector('.step-date').textContent = 'Approved today';
+            steps[2].classList.add('is-active');
+            steps[2].querySelector('.step-date').textContent = 'Awaiting action';
+
+            // Update sidebar chain
+            var chain = document.querySelectorAll('.chain-step-item');
+            chain[1].querySelector('.chain-step-num').style.background = 'var(--brand-success)';
+            chain[1].querySelector('.chain-step-num').innerHTML = '&#10003;';
+            chain[1].querySelector('.status-pill').textContent = 'Done';
+            chain[1].querySelector('.status-pill').className = 'status-pill status-approved';
+            chain[1].querySelector('.status-pill').style.fontSize = '11px';
+            chain[2].querySelector('.chain-step-num').style.background = 'var(--brand-primary)';
+            chain[2].querySelector('.chain-step-num').style.color = '#fff';
+            chain[2].querySelector('.status-pill').textContent = 'Active';
+            chain[2].querySelector('.status-pill').className = 'status-pill status-review';
+            chain[2].querySelector('.status-pill').style.fontSize = '11px';
+            chain[2].querySelector('.chain-step-num').style.removeProperty = undefined;
+
+            // Update status badge in hero
+            var badge = document.querySelector('.stat-card .status-pill.status-pending');
+            if (badge) { badge.textContent = 'In review'; badge.className = 'status-pill status-review'; }
+
+            // Audit trail entry
+            addAuditEntry('MS', 'Mary Saveley — Procurement Lead', 'status-approved', 'Approved',
+                getNoteText('Stage approved. Procurement review complete. Advancing to Commercial Review.'));
+
+            hideActionPanel();
+            showConfirmationPanel(
+                'rgba(11,107,58,0.06)', 'rgba(11,107,58,0.2)', 'var(--brand-success)',
+                'Stage approved — advancing to Commercial Review',
+                'Your decision has been recorded and the request has moved to the next stage. The assigned Commercial Review approver has been notified by email.',
+                'approvalList.html', 'Back to approval queue'
+            );
+
+            // Update current stage heading
+            document.querySelector('#decision-field').closest('section').querySelector('h2').textContent = 'Approved — Commercial Review next';
+        }
+
+        function requestMoreInfo() {
+            addAuditEntry('MS', 'Mary Saveley — Procurement Lead', 'status-review', 'Information requested',
+                getNoteText('Additional information is required before this stage can be approved. The requester has been notified.'));
+
+            // Update status badge
+            var badge = document.querySelector('.stat-card .status-pill');
+            if (badge) { badge.textContent = 'Needs update'; badge.className = 'status-pill status-overdue'; badge.style.fontSize = '13px'; }
+
+            hideActionPanel();
+            showConfirmationPanel(
+                'rgba(200,130,0,0.06)', 'rgba(200,130,0,0.2)', '#b36a00',
+                'Information requested',
+                'The requester has been notified by email. The form will remain in the queue until they resubmit with the additional information.',
+                'approvalList.html', 'Back to approval queue'
+            );
+        }
+
+        function denyRequest() {
+            // Mark all remaining steps as blocked
+            var steps = document.querySelectorAll('.workflow-step');
+            for (var i = 1; i < steps.length; i++) {
+                steps[i].classList.remove('is-active', 'is-complete');
+            }
+            steps[1].querySelector('.step-dot').innerHTML = '&#10005;';
+            steps[1].querySelector('.step-dot').style.background = 'var(--brand-danger, #c0392b)';
+            steps[1].querySelector('.step-date').textContent = 'Denied';
+
+            // Update status badge
+            var badge = document.querySelector('.stat-card .status-pill');
+            if (badge) { badge.textContent = 'Denied'; badge.className = 'status-pill status-overdue'; badge.style.fontSize = '13px'; }
+
+            addAuditEntry('MS', 'Mary Saveley — Procurement Lead', 'status-overdue', 'Denied',
+                getNoteText('Request has been denied at Procurement Review stage. The requester has been notified.'));
+
+            hideActionPanel();
+            showConfirmationPanel(
+                'rgba(192,57,43,0.05)', 'rgba(192,57,43,0.2)', '#c0392b',
+                'Request denied',
+                'The request has been closed and the requester notified by email. The decision has been recorded in the audit trail. Denied requests can be reviewed from the approval list.',
+                'approvalList.html', 'Back to approval queue'
+            );
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Guide | Concise Forms Management</title>
+    <meta name="description" content="Full user guide for the Concise Forms Management portal">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        /* ── User guide specific styles ──────────────────────────────── */
+        .guide-layout {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .guide-nav {
+            position: sticky;
+            top: 24px;
+        }
+
+        .guide-nav-inner {
+            background: #fff;
+            border: 1px solid var(--brand-border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .guide-nav h3 {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-text-muted);
+            margin: 0 0 10px;
+        }
+
+        .guide-nav ol {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 2px;
+        }
+
+        .guide-nav ol li a {
+            display: block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--brand-text-muted);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .guide-nav ol li a:hover {
+            background: var(--brand-surface-muted);
+            color: var(--brand-text);
+        }
+
+        .guide-nav ol li.nav-section {
+            margin-top: 10px;
+        }
+
+        .guide-nav ol li.nav-section > a {
+            color: var(--brand-text);
+            font-weight: 800;
+        }
+
+        .guide-body {
+            display: grid;
+            gap: 24px;
+        }
+
+        .guide-section {
+            scroll-margin-top: 24px;
+        }
+
+        .guide-section h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--brand-text);
+            margin: 0 0 4px;
+            padding-top: 4px;
+        }
+
+        .guide-section .section-number {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-primary);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .guide-section p {
+            color: var(--brand-text-muted);
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+
+        .guide-section p:last-child { margin-bottom: 0; }
+
+        .guide-section h3 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--brand-text);
+            margin: 22px 0 8px;
+        }
+
+        .guide-section h3:first-of-type { margin-top: 16px; }
+
+        .guide-section ul, .guide-section ol {
+            color: var(--brand-text-muted);
+            padding-left: 22px;
+            margin-bottom: 14px;
+            line-height: 1.75;
+        }
+
+        .guide-section li { margin-bottom: 4px; }
+
+        .guide-divider {
+            border: none;
+            border-top: 1px solid var(--brand-border);
+            margin: 0;
+        }
+
+        /* Role badge pills */
+        .role-pill {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            vertical-align: middle;
+        }
+        .role-admin     { background: rgba(0,48,135,0.1); color: #003087; }
+        .role-approver  { background: rgba(0,94,184,0.1); color: #005eb8; }
+        .role-requester { background: rgba(11,107,58,0.1); color: #0b6b3a; }
+
+        /* Steps list */
+        .steps-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 14px;
+            display: grid;
+            gap: 10px;
+            counter-reset: step-counter;
+        }
+
+        .steps-list li {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 12px;
+            align-items: start;
+            counter-increment: step-counter;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .steps-list li > div strong {
+            display: block;
+            color: var(--brand-text);
+            font-weight: 800;
+            margin-bottom: 2px;
+            font-size: 14px;
+        }
+
+        .steps-list li > div span {
+            color: var(--brand-text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Status reference table */
+        .status-ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .status-ref-table th {
+            text-align: left;
+            font-weight: 800;
+            color: var(--brand-text);
+            padding: 8px 12px;
+            border-bottom: 2px solid var(--brand-border);
+        }
+
+        .status-ref-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--brand-border);
+            color: var(--brand-text-muted);
+            vertical-align: top;
+        }
+
+        .status-ref-table tr:last-child td { border-bottom: 0; }
+
+        /* Callout boxes */
+        .guide-callout {
+            padding: 14px 18px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            margin-bottom: 14px;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .guide-callout.tip   { background: rgba(0,94,184,0.06); border-color: var(--brand-primary); color: var(--brand-text-muted); }
+        .guide-callout.warn  { background: rgba(200,130,0,0.07); border-color: #c88200; color: var(--brand-text-muted); }
+        .guide-callout.admin { background: rgba(0,48,135,0.05); border-color: #003087; color: var(--brand-text-muted); }
+
+        .guide-callout strong { color: var(--brand-text); }
+
+        /* Workflow mini-diagram */
+        .mini-workflow {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .mini-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .mini-step-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .mini-step-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand-text-muted);
+            margin-top: 6px;
+            max-width: 80px;
+            line-height: 1.3;
+        }
+
+        .mini-connector {
+            flex: 1;
+            height: 2px;
+            background: var(--brand-border);
+            min-width: 20px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 768px) {
+            .guide-layout { grid-template-columns: 1fr; }
+            .guide-nav { position: static; }
+        }
+    </style>
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-forms">
+                <div>
+                    <p class="eyebrow">Documentation</p>
+                    <h1>Concise Forms Management &mdash; User Guide</h1>
+                    <p class="hero-text">A complete reference for requesters, approvers, and system administrators covering every screen, workflow, and decision point in the portal.</p>
+                </div>
+                <div class="stat-strip" aria-label="Guide contents">
+                    <div class="stat-card">
+                        <strong>3</strong>
+                        <span>User roles</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>5</strong>
+                        <span>Approval stages</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>9</strong>
+                        <span>Guide sections</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="guide-layout">
+
+                <!-- ── Sticky left nav ─────────────────────────────────── -->
+                <nav class="guide-nav" aria-label="Guide contents">
+                    <div class="guide-nav-inner">
+                        <h3>Contents</h3>
+                        <ol>
+                            <li class="nav-section"><a href="#s1">1. System overview</a></li>
+                            <li><a href="#s1-roles">User roles</a></li>
+                            <li><a href="#s1-status">Status reference</a></li>
+                            <li class="nav-section"><a href="#s2">2. Logging in</a></li>
+                            <li class="nav-section"><a href="#s3">3. Dashboard</a></li>
+                            <li class="nav-section"><a href="#s4">4. Form List</a></li>
+                            <li><a href="#s4-filter">Filtering &amp; search</a></li>
+                            <li><a href="#s4-actions">Row actions</a></li>
+                            <li class="nav-section"><a href="#s5">5. Creating a request</a></li>
+                            <li><a href="#s5-summary">Request summary</a></li>
+                            <li><a href="#s5-detailed">Detailed form</a></li>
+                            <li><a href="#s5-submit">Submitting</a></li>
+                            <li class="nav-section"><a href="#s6">6. Approval workflow</a></li>
+                            <li><a href="#s6-chain">Approval chain</a></li>
+                            <li><a href="#s6-list">Approval List</a></li>
+                            <li><a href="#s6-detail">Approval Detail</a></li>
+                            <li><a href="#s6-decisions">Making decisions</a></li>
+                            <li class="nav-section"><a href="#s7">7. Form templates (Admin)</a></li>
+                            <li class="nav-section"><a href="#s8">8. User management (Admin)</a></li>
+                            <li class="nav-section"><a href="#s9">9. Quick reference</a></li>
+                        </ol>
+                    </div>
+                </nav>
+
+                <!-- ── Guide body ──────────────────────────────────────── -->
+                <div class="guide-body">
+
+                    <!-- Section 1: System overview -->
+                    <section class="surface-panel table-panel guide-section" id="s1">
+                        <span class="section-number">Section 1</span>
+                        <h2>System overview</h2>
+                        <p>Concise Forms Management is an NHS procurement portal for creating, reviewing, and approving Standing Financial Instruction (SFI) waiver forms. It replaces ad-hoc email-based requests with a structured, auditable workflow that routes every submission through a defined approval chain before a decision is recorded.</p>
+                        <p>The portal handles four main form types, all governed by Trust Policy CP105:</p>
+                        <ul>
+                            <li><strong>SFI &mdash; Tender Waiver Justification</strong> — used when formally tendering is being waived and a business case must be documented.</li>
+                            <li><strong>SFI &mdash; Tender Waiver Recommendation</strong> — used at the recommendation stage after initial procurement review.</li>
+                            <li><strong>SFI &mdash; Quotation Waiver Justification</strong> — used when a quotation process is waived and the full supplier rationale must be captured.</li>
+                            <li><strong>SFI &mdash; Quotation Waiver Recommendation</strong> — used for the onward approval step after a quotation waiver is accepted.</li>
+                        </ul>
+
+                        <hr class="guide-divider" style="margin:20px 0">
+
+                        <h3 id="s1-roles">User roles</h3>
+                        <p>Every portal account is assigned one of three roles:</p>
+                        <ul>
+                            <li><span class="role-pill role-requester">Requester</span> — can create new form requests, complete detailed forms, submit for approval, and track the status of their own submissions. Cannot approve forms.</li>
+                            <li><span class="role-pill role-approver">Approver</span> — receives email notifications when a form reaches a stage they are assigned to. Can review the form detail, add a decision note, and approve, deny, or request more information. Cannot create or submit forms.</li>
+                            <li><span class="role-pill role-admin">Admin</span> — has full access to all areas of the portal. Can manage users, create and edit form templates, configure approval chains, and perform any action available to Requesters and Approvers.</li>
+                        </ul>
+
+                        <div class="guide-callout admin">
+                            <strong>Admin-only pages:</strong> Form Templates (<a href="formAdmin.html" class="table-link">formAdmin.html</a>) and User Management (<a href="users.html" class="table-link">users.html</a>) are intended for administrators only. These pages are visible to all users in this prototype but would be access-controlled in a live deployment.
+                        </div>
+
+                        <h3 id="s1-status">Status reference</h3>
+                        <p>Every form displays a coloured status pill. The full set of statuses and their meanings:</p>
+
+                        <table class="status-ref-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Who sees it</th>
+                                    <th>What it means</th>
+                                    <th>Next action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="status-pill status-pending">Draft</span></td>
+                                    <td>Requester</td>
+                                    <td>Form has been started but not submitted.</td>
+                                    <td>Requester completes and submits.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-pending">Pending</span></td>
+                                    <td>All</td>
+                                    <td>Submitted and waiting for the first approver to act.</td>
+                                    <td>Assigned approver reviews and decides.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-review">In review</span></td>
+                                    <td>All</td>
+                                    <td>The form is actively being reviewed at the current approval stage.</td>
+                                    <td>Approver records a decision.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-approved">Approved</span></td>
+                                    <td>All</td>
+                                    <td>All approval stages have been passed successfully.</td>
+                                    <td>Procurement team files the record.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-overdue">Needs update</span></td>
+                                    <td>Requester</td>
+                                    <td>An approver has requested more information before the form can advance.</td>
+                                    <td>Requester updates the form and resubmits.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-overdue">Overdue</span></td>
+                                    <td>Approver, Admin</td>
+                                    <td>An approval deadline has passed with no decision recorded.</td>
+                                    <td>Admin or senior approver escalates.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="status-pill status-overdue">Denied</span></td>
+                                    <td>All</td>
+                                    <td>The request has been rejected at an approval stage and is closed.</td>
+                                    <td>Requester may raise a new request if appropriate.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <!-- Section 2: Logging in -->
+                    <section class="surface-panel table-panel guide-section" id="s2">
+                        <span class="section-number">Section 2</span>
+                        <h2>Logging in</h2>
+                        <p>Access the portal through your organisation's intranet link. The login page (<a href="Login.html" class="table-link">Login.html</a>) requires your NHS email address and password. Once authenticated you will land on the dashboard (Home page).</p>
+                        <p>If you cannot log in, contact your system administrator to check that your account is Active in the User directory. Suspended or Inactive accounts cannot authenticate.</p>
+                        <div class="guide-callout tip">
+                            <strong>Session management:</strong> Use the <em>Log Out</em> link in the top-right corner of every page to end your session. Do not share your credentials or leave the portal open on shared machines.
+                        </div>
+                    </section>
+
+                    <!-- Section 3: Dashboard -->
+                    <section class="surface-panel table-panel guide-section" id="s3">
+                        <span class="section-number">Section 3</span>
+                        <h2>Dashboard (Home)</h2>
+                        <p>The Home page (<a href="index.html" class="table-link">index.html</a>) is your starting point after login. It provides three shortcut cards and a pair of primary action buttons:</p>
+                        <ul>
+                            <li><strong>Open Form List</strong> — takes you directly to the register of submitted forms.</li>
+                            <li><strong>Review Approvals</strong> — takes you directly to the approval queue.</li>
+                        </ul>
+                        <p>The three portal cards — Forms, Approvals, and Users — provide context for each area and link to the relevant page. Use the top navigation bar on any page to move between sections.</p>
+                    </section>
+
+                    <!-- Section 4: Form List -->
+                    <section class="surface-panel table-panel guide-section" id="s4">
+                        <span class="section-number">Section 4</span>
+                        <h2>Form List</h2>
+                        <p>The Form List (<a href="formsList.html" class="table-link">formsList.html</a>) is the central register of all waiver requests that have been started or submitted in the portal. Requesters use it to track their submissions; approvers and admins use it to monitor outstanding work.</p>
+
+                        <h3 id="s4-filter">Filtering and search</h3>
+                        <p>Four filter chips appear at the top of the page:</p>
+                        <ul>
+                            <li><strong>All</strong> — shows every record regardless of type or status.</li>
+                            <li><strong>Tender waivers</strong> — shows only Tender Waiver Justification and Recommendation records.</li>
+                            <li><strong>Quotation waivers</strong> — shows only Quotation Waiver records.</li>
+                            <li><strong>Pending only</strong> — shows records in Pending or Needs Update status that still require requester or approver action.</li>
+                        </ul>
+                        <p>The search box filters live as you type. It matches against the form code (e.g. TWJ0001), the requester name, and the form type. Combining a chip filter with a search term narrows results further. The <em>Showing</em> counter in the summary strip updates to reflect the visible count.</p>
+
+                        <h3 id="s4-actions">Row actions</h3>
+                        <p>Each row in the table has an Action column. The available actions depend on the form's current status:</p>
+                        <ul>
+                            <li><strong>Open</strong> — appears on Pending forms. Opens the detailed form so the requester can review or complete it before submitting.</li>
+                            <li><strong>Submit</strong> — appears alongside Open on Pending forms. Takes the requester directly to the Submit for approval section of the detailed form.</li>
+                            <li><strong>View</strong> — appears on Approved forms. Opens a read-only view of the completed form.</li>
+                            <li><strong>Track</strong> — appears on forms In review. Opens the Approval Detail page so the requester can see which stage the form is currently at.</li>
+                            <li><strong>Update</strong> — appears when a form has status Needs Update. Opens the request summary so the requester can amend the information.</li>
+                            <li><strong>Resubmit</strong> — appears alongside Update. Takes the requester to the form ready to resubmit after making changes.</li>
+                        </ul>
+                        <p>To start a new request, click the <em>New request</em> button in the top-right of the table panel.</p>
+                    </section>
+
+                    <!-- Section 5: Creating a request -->
+                    <section class="surface-panel table-panel guide-section" id="s5">
+                        <span class="section-number">Section 5</span>
+                        <h2>Creating a request</h2>
+                        <p>A waiver request is built in two stages: first the request summary, then the detailed form. Both must be completed before the form can be submitted for approval.</p>
+
+                        <h3 id="s5-summary">Step 1 — Request summary</h3>
+                        <p>Open <a href="newForm.html" class="table-link">newForm.html</a> directly or via <em>New request</em> on the Form List. The summary captures the key headline information:</p>
+                        <ul>
+                            <li>Request title — a short description of what the waiver covers</li>
+                            <li>Form type — select the appropriate waiver category (Tender or Quotation, Justification or Recommendation)</li>
+                            <li>Requested date, requester name, and department</li>
+                            <li>Estimated value (excluding VAT) and proposed supplier</li>
+                            <li>Business summary — describe the need, urgency, and procurement context</li>
+                            <li>Initial justification — explain why the waiver is being requested and what evidence supports it</li>
+                        </ul>
+                        <p>Use <em>Save as draft</em> to save progress and return later. The status badge updates to show <em>Draft saved</em> briefly, then reverts to <em>Draft</em>.</p>
+
+                        <h3 id="s5-detailed">Step 2 — Detailed form</h3>
+                        <p>Click <em>Complete detailed form</em> to open the full structured form (<a href="SFI - Tender Waiver Justification.html" class="table-link">SFI &mdash; Tender Waiver Justification</a>). This form has five sections:</p>
+                        <ul>
+                            <li><strong>Section 1 &mdash; Request details:</strong> reference number, date issued, goods or service type, estimated value, proposed supplier, contract period, health group, division, and department.</li>
+                            <li><strong>Section 2 &mdash; Waiver justification:</strong> a full description of the item or service, a summary of the proposed supplier, and a detailed justification for waiving formal tendering procedures. Read the warning banner before completing this section — waivers cannot be used for administrative convenience or to avoid competition.</li>
+                            <li><strong>Section 3 &mdash; Reason for waiver:</strong> select one or more of the eight policy options (A through H) that apply to your request. These are defined in Trust Policy CP105.</li>
+                            <li><strong>Section 4 &mdash; Financial information:</strong> select the funding source (Revenue, Capital, or Other) and provide the cost centre and expense code.</li>
+                            <li><strong>Section 5 &mdash; Requester declaration:</strong> this section gates the submission. You must tick the declaration checkbox confirming you have no conflict of interest with the proposed supplier before the <em>Submit for approval</em> button becomes active.</li>
+                        </ul>
+
+                        <div class="guide-callout warn">
+                            <strong>Important:</strong> Completed forms must not be submitted directly to the Chief Executive or Chief Finance Officer. The portal routes the form to the Procurement Team at HRI automatically. Contact the procurement team before submission if you wish to discuss the request.
+                        </div>
+
+                        <h3 id="s5-submit">Step 3 — Submitting for approval</h3>
+                        <ol class="steps-list">
+                            <li><div><strong>Tick the declaration checkbox</strong><span>In Section 5, check the box confirming no conflict of interest. The Submit button will unlock.</span></div></li>
+                            <li><div><strong>Click &ldquo;Submit for approval&rdquo;</strong><span>The form actions are replaced by a confirmation panel. The status badge changes to <em>Pending</em>.</span></div></li>
+                            <li><div><strong>Confirmation shown</strong><span>A green confirmation panel confirms the form is in the approval queue and that assigned approvers have been notified by email.</span></div></li>
+                            <li><div><strong>Track progress</strong><span>Use <em>Go to form list</em> or <em>View approval queue</em> from the confirmation panel to monitor the request.</span></div></li>
+                        </ol>
+                        <p>Once submitted, the requester cannot edit the form unless an approver requests more information (which returns it to <em>Needs update</em> status).</p>
+                    </section>
+
+                    <!-- Section 6: Approval workflow -->
+                    <section class="surface-panel table-panel guide-section" id="s6">
+                        <span class="section-number">Section 6</span>
+                        <h2>Approval workflow</h2>
+                        <p>Every submitted form moves through a defined approval chain. The chain is configured per form template by an administrator. The default chain for a Tender Waiver Justification has five stages:</p>
+
+                        <div class="mini-workflow" aria-label="Five-step approval chain">
+                            <div class="mini-step">
+                                <div class="mini-step-dot" style="background:var(--brand-success)">&#10003;</div>
+                                <div class="mini-step-label">1. Submitted</div>
+                            </div>
+                            <div class="mini-connector"></div>
+                            <div class="mini-step">
+                                <div class="mini-step-dot">2</div>
+                                <div class="mini-step-label">Procurement Review</div>
+                            </div>
+                            <div class="mini-connector"></div>
+                            <div class="mini-step">
+                                <div class="mini-step-dot">3</div>
+                                <div class="mini-step-label">Commercial Review</div>
+                            </div>
+                            <div class="mini-connector"></div>
+                            <div class="mini-step">
+                                <div class="mini-step-dot">4</div>
+                                <div class="mini-step-label">Finance Sign-off</div>
+                            </div>
+                            <div class="mini-connector"></div>
+                            <div class="mini-step">
+                                <div class="mini-step-dot">5</div>
+                                <div class="mini-step-label">Executive Approval</div>
+                            </div>
+                        </div>
+
+                        <p>Stage 1 (Submitted) completes automatically when the requester submits the form. Each subsequent stage must be approved by the assigned approver before the form advances. If any stage is denied, the form is closed at that point and the requester is notified. If more information is requested, the form returns to the requester for updates.</p>
+
+                        <h3 id="s6-chain">How the approval chain is configured</h3>
+                        <p>Administrators set the approval chain in the Form Template Admin page. Each step in the chain has a name (e.g. <em>Procurement Review</em>) and an assigned user. Only users with the <span class="role-pill role-admin">Admin</span> or <span class="role-pill role-approver">Approver</span> role can be selected. Inactive accounts are shown but cannot be selected. The notification email used for each approver is the address stored in their user profile.</p>
+
+                        <h3 id="s6-list">Approval List</h3>
+                        <p>The Approval List (<a href="approvalList.html" class="table-link">approvalList.html</a>) shows every form currently in the approval queue. Approvers see all forms assigned to any approver; in a live deployment this would be filtered to show each approver only their own queue.</p>
+                        <p>The table columns are:</p>
+                        <ul>
+                            <li><strong>Code</strong> — the unique form reference; click to open the Approval Detail page.</li>
+                            <li><strong>Type</strong> — the form template type.</li>
+                            <li><strong>Requester</strong> — who submitted the form.</li>
+                            <li><strong>Submitted</strong> — the date the form entered the queue.</li>
+                            <li><strong>Status</strong> — current status pill.</li>
+                            <li><strong>Workflow</strong> — five coloured dots showing which stage is complete (filled), active (pulsing), or waiting (grey). Hover for a label.</li>
+                            <li><strong>Approver</strong> — the user assigned to the current stage.</li>
+                            <li><strong>Decision</strong> — quick action links (Review, Escalate, Hold) that each open the full Approval Detail page.</li>
+                        </ul>
+
+                        <p>Four filter chips narrow the list:</p>
+                        <ul>
+                            <li><strong>All approvers</strong> — shows the full queue.</li>
+                            <li><strong>Priority review</strong> — shows only Overdue forms.</li>
+                            <li><strong>Due this week</strong> — shows Pending and Overdue forms that require action.</li>
+                            <li><strong>Needs clarification</strong> — shows forms currently In review where the approver is actively working.</li>
+                        </ul>
+
+                        <h3 id="s6-detail">Approval Detail page</h3>
+                        <p>Click any form code or decision link on the Approval List to open the Approval Detail page (<a href="approvalDetail.html" class="table-link">approvalDetail.html</a>). This page has three main areas:</p>
+                        <ul>
+                            <li><strong>Workflow stepper</strong> — a horizontal timeline showing all five stages. Completed stages show a tick; the active stage is highlighted; future stages are greyed out. Dates are shown beneath each stage.</li>
+                            <li><strong>Current stage action panel</strong> — describes what the current stage requires and provides the decision note field plus the three decision buttons.</li>
+                            <li><strong>Audit trail</strong> — a full chronological log of every action taken on the form. Each entry shows who acted, what decision they recorded, when, and any note they left.</li>
+                        </ul>
+                        <p>The right sidebar shows the request details (form code, requester, supplier, value, policy reference) and the full approval chain with each step's current status (Done, Active, or Waiting).</p>
+                        <p>Use the <em>View full form</em> button to open the completed detailed form in read-only mode alongside the approval context.</p>
+
+                        <h3 id="s6-decisions">Making decisions</h3>
+                        <p>Three decisions are available to the approver at the current stage:</p>
+
+                        <ol class="steps-list">
+                            <li>
+                                <div>
+                                    <strong>Approve &amp; advance</strong>
+                                    <span>The current stage is marked complete (tick), the next stage becomes active, and the next assigned approver is notified by email. The workflow stepper updates visually. A confirmation panel confirms the decision and offers a link back to the approval queue. The audit trail records the decision with the current date and time.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Request more information</strong>
+                                    <span>The form status changes to <em>Needs update</em>. The requester is notified by email and can update their submission and resubmit. The request stays in the queue but is blocked until resubmitted. The audit trail records the request with any note you added.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Deny request</strong>
+                                    <span>The form is permanently closed. The requester is notified by email. No further stages are processed. The decision is recorded in the audit trail. A denied form can be viewed for reference but cannot be reactivated &mdash; a new request must be raised.</span>
+                                </div>
+                            </li>
+                        </ol>
+
+                        <div class="guide-callout tip">
+                            <strong>Tip:</strong> Always add a decision note before clicking Approve, Request, or Deny. Your note is recorded in the audit trail and gives the requester and subsequent approvers the context they need to act quickly.
+                        </div>
+                    </section>
+
+                    <!-- Section 7: Form templates (Admin) -->
+                    <section class="surface-panel table-panel guide-section" id="s7">
+                        <span class="section-number">Section 7</span>
+                        <h2>Form templates <span class="role-pill role-admin" style="font-size:12px;margin-left:6px">Admin only</span></h2>
+                        <p>Administrators manage all form templates from the Form Template Admin page (<a href="formAdmin.html" class="table-link">formAdmin.html</a>). Access it via <em>Manage templates</em> on the Forms page, or via the <em>Edit template</em> action on any form card.</p>
+
+                        <h3>Adding a new template</h3>
+                        <p>Fill in the <em>Add new template</em> form at the top of the page:</p>
+                        <ul>
+                            <li><strong>Template name</strong> — the display name used throughout the portal.</li>
+                            <li><strong>Category</strong> — Tender, Quotation, or Other.</li>
+                            <li><strong>Description</strong> — explains when staff should use this form.</li>
+                            <li><strong>Policy reference</strong> — the Trust policy number (e.g. CP105).</li>
+                            <li><strong>Value threshold</strong> — the maximum contract value the form applies to.</li>
+                            <li><strong>Guidance notice</strong> — the important notice shown at the top of the form before requesters start filling it in.</li>
+                            <li><strong>Status</strong> — Draft (not visible to requesters), Active (available for new requests), or Archived.</li>
+                            <li><strong>Template owner</strong> — the responsible team or individual.</li>
+                        </ul>
+
+                        <h3>Configuring the approval chain</h3>
+                        <p>The approval chain builder appears in the right panel alongside the template form:</p>
+                        <ul>
+                            <li><strong>Step 1</strong> is fixed as <em>Submitted / Auto</em> and cannot be removed.</li>
+                            <li>For each additional step, enter a step name (e.g. <em>Procurement Review</em>) and select an approver from the dropdown. Only users with Admin or Approver roles and an Active account appear as options.</li>
+                            <li>The selected approver's NHS email address is shown beneath the dropdown as confirmation of where notifications will be sent.</li>
+                            <li>Use the <strong>&times;</strong> button to remove a step. Steps renumber automatically.</li>
+                            <li>Use <em>+ Add approval step</em> to insert additional stages.</li>
+                        </ul>
+
+                        <div class="guide-callout warn">
+                            <strong>Important:</strong> Changes to an approval chain apply to new submissions only. Forms already in progress continue to follow the chain that was active when they were submitted.
+                        </div>
+
+                        <h3>Managing existing templates</h3>
+                        <p>The <em>Existing templates</em> section below the add form lists all templates. Use the filter chips to show All, Active, Draft, or Archived templates. Each template card shows the name, description, category tags, number of approval steps, policy reference, and last edited date. Available actions:</p>
+                        <ul>
+                            <li><strong>Edit</strong> — opens the template in the add/edit form for modification.</li>
+                            <li><strong>Archive</strong> — removes the template from the requester-facing Forms page. Archived templates are retained for audit purposes and can be restored.</li>
+                            <li><strong>Restore</strong> (archived only) — makes the template Active again.</li>
+                            <li><strong>Discard draft</strong> (draft only) — permanently deletes a template that has never been published.</li>
+                        </ul>
+                    </section>
+
+                    <!-- Section 8: User management (Admin) -->
+                    <section class="surface-panel table-panel guide-section" id="s8">
+                        <span class="section-number">Section 8</span>
+                        <h2>User management <span class="role-pill role-admin" style="font-size:12px;margin-left:6px">Admin only</span></h2>
+                        <p>The User directory (<a href="users.html" class="table-link">users.html</a>) lists all portal accounts. Each row shows the user's name, creation date, role, account status, and a Manage or Review action link.</p>
+
+                        <h3>Adding a new user</h3>
+                        <p>Click <em>Add new user</em> in the hero section. The User Detail page (<a href="userDetail.html?mode=add" class="table-link">userDetail.html</a>) opens in add mode — all fields are blank and the Suspend button and sidebar are hidden.</p>
+                        <p>Complete the following fields:</p>
+                        <ul>
+                            <li><strong>First and last name</strong> — the avatar preview updates live as you type, showing the user's initials and full name.</li>
+                            <li><strong>Email address</strong> — must be the user's NHS email address. This is the address that receives approval notifications.</li>
+                            <li><strong>Role</strong> — Admin, Approver, or Requester.</li>
+                            <li><strong>Account status</strong> — set to Active to allow login; Inactive or Suspended to block access.</li>
+                            <li><strong>Department and Division</strong> — used for reporting and context.</li>
+                            <li><strong>Phone</strong> — optional direct dial or extension.</li>
+                            <li><strong>Notes</strong> — optional notes about the user's responsibilities or limitations.</li>
+                        </ul>
+                        <p>Click <em>Save changes</em> to create the account.</p>
+
+                        <h3>Editing an existing user</h3>
+                        <p>Click <em>Manage</em> or <em>Review</em> next to a user in the directory. The User Detail page opens in edit mode, pre-filled with the user's current details. The right sidebar shows:</p>
+                        <ul>
+                            <li><strong>Approval chain assignments</strong> — which form templates this user is set as an approver on, and at which step. Click <em>Edit</em> to go directly to the template's approval chain configuration.</li>
+                            <li><strong>Recent activity</strong> — the last five actions taken by or assigned to this user.</li>
+                        </ul>
+
+                        <h3>Suspending an account</h3>
+                        <p>Click <em>Suspend account</em> (shown in red) to immediately block the user's access. Suspended users are shown with a red status pill in the directory. To reinstate, open the user detail, change the status back to Active, and save.</p>
+
+                        <div class="guide-callout warn">
+                            <strong>Note:</strong> Before suspending or deactivating an Approver, check their approval chain assignments. If they are currently the active approver on any in-progress form, those forms will become blocked. Reassign the chain step to another approver first.
+                        </div>
+                    </section>
+
+                    <!-- Section 9: Quick reference -->
+                    <section class="surface-panel table-panel guide-section" id="s9">
+                        <span class="section-number">Section 9</span>
+                        <h2>Quick reference</h2>
+
+                        <h3>Navigation map</h3>
+                        <table class="status-ref-table">
+                            <thead>
+                                <tr><th>Page</th><th>URL</th><th>Who uses it</th><th>Purpose</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Home</td><td><a href="index.html" class="table-link">index.html</a></td><td>All</td><td>Dashboard and quick links</td></tr>
+                                <tr><td>Form List</td><td><a href="formsList.html" class="table-link">formsList.html</a></td><td>All</td><td>View, filter, and act on submitted forms</td></tr>
+                                <tr><td>New Request</td><td><a href="newForm.html" class="table-link">newForm.html</a></td><td>Requester, Admin</td><td>Create a new waiver request summary</td></tr>
+                                <tr><td>Detailed Form</td><td><a href="SFI - Tender Waiver Justification.html" class="table-link">SFI form</a></td><td>Requester, Admin</td><td>Complete the full structured waiver form and submit</td></tr>
+                                <tr><td>Approval List</td><td><a href="approvalList.html" class="table-link">approvalList.html</a></td><td>Approver, Admin</td><td>Monitor the approval queue and open pending decisions</td></tr>
+                                <tr><td>Approval Detail</td><td><a href="approvalDetail.html" class="table-link">approvalDetail.html</a></td><td>Approver, Admin</td><td>Review a form in full, make a decision, view audit trail</td></tr>
+                                <tr><td>Forms</td><td><a href="forms.html" class="table-link">forms.html</a></td><td>All</td><td>Browse available form templates</td></tr>
+                                <tr><td>Form Template Admin</td><td><a href="formAdmin.html" class="table-link">formAdmin.html</a></td><td>Admin</td><td>Add, edit, archive form templates and approval chains</td></tr>
+                                <tr><td>Users</td><td><a href="users.html" class="table-link">users.html</a></td><td>Admin</td><td>User directory — add, manage, suspend accounts</td></tr>
+                                <tr><td>User Detail</td><td><a href="userDetail.html" class="table-link">userDetail.html</a></td><td>Admin</td><td>Edit user details, role, email, and view assignments</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 style="margin-top:22px">Requester checklist</h3>
+                        <ul>
+                            <li>&#9744; Open the correct form template from the Forms page</li>
+                            <li>&#9744; Complete the request summary on the New Request page</li>
+                            <li>&#9744; Open the detailed form and fill in all five sections</li>
+                            <li>&#9744; Tick the declaration checkbox in Section 5</li>
+                            <li>&#9744; Click <em>Submit for approval</em> — confirm the green confirmation panel appears</li>
+                            <li>&#9744; Track progress from the Form List using the Track or View actions</li>
+                            <li>&#9744; If the form returns with <em>Needs update</em> status, update and resubmit promptly</li>
+                        </ul>
+
+                        <h3>Approver checklist</h3>
+                        <ul>
+                            <li>&#9744; Watch for the email notification alerting you to a pending form</li>
+                            <li>&#9744; Open the Approval List and locate the form</li>
+                            <li>&#9744; Click the form code or Review link to open the Approval Detail page</li>
+                            <li>&#9744; Read the full form using <em>View full form</em></li>
+                            <li>&#9744; Add a decision note explaining your decision</li>
+                            <li>&#9744; Click <em>Approve &amp; advance</em>, <em>Request more information</em>, or <em>Deny request</em></li>
+                            <li>&#9744; Confirm the confirmation panel shows and the audit trail has updated</li>
+                        </ul>
+
+                        <h3>Admin checklist — setting up a new form type</h3>
+                        <ul>
+                            <li>&#9744; Ensure all intended approvers have Active accounts in the User directory with correct email addresses</li>
+                            <li>&#9744; Open Form Template Admin and complete the <em>Add new template</em> form</li>
+                            <li>&#9744; Build the approval chain: name each step and assign an approver from the dropdown</li>
+                            <li>&#9744; Set the template status to Active and click <em>Save and publish</em></li>
+                            <li>&#9744; Verify the template appears on the Forms page for requesters</li>
+                        </ul>
+                    </section>
+
+                </div><!-- /guide-body -->
+
+            </div><!-- /guide-layout -->
+        </main>
+    </div>
+</body>
+</html>
