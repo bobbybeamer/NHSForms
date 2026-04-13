@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Detail | Concise Forms Management</title>
+    <meta name="description" content="Add or edit a portal user">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .user-avatar-block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid var(--brand-border);
+        }
+        .user-avatar-lg {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(0, 94, 184, 0.12);
+            border: 2px solid rgba(0, 94, 184, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--brand-primary-dark);
+            flex-shrink: 0;
+        }
+        .user-avatar-meta strong {
+            display: block;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--brand-text);
+        }
+        .user-avatar-meta span {
+            color: var(--brand-text-muted);
+            font-size: 14px;
+        }
+        .assignments-list {
+            display: grid;
+            gap: 10px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .assignments-list li {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--brand-border);
+            border-radius: 10px;
+            background: #fff;
+            font-size: 14px;
+        }
+        .assignments-list li strong {
+            display: block;
+            font-weight: 800;
+            color: var(--brand-text);
+        }
+        .assignments-list li span {
+            color: var(--brand-text-muted);
+        }
+        .activity-log {
+            display: grid;
+            gap: 10px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .activity-log li {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 13px;
+            color: var(--brand-text-muted);
+        }
+        .activity-log li strong {
+            display: block;
+            color: var(--brand-text);
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .activity-log li:last-child { border-bottom: 0; }
+    </style>
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a class="is-active" href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-users">
+                <div>
+                    <p class="eyebrow" id="page-eyebrow">User profile</p>
+                    <h1 id="page-title">Mary Saveley</h1>
+                    <p class="hero-text" id="page-subtitle">Review and update this user's details, role, and approval chain assignments.</p>
+                    <div class="hero-actions" style="margin-top:24px">
+                        <a class="secondary-action" href="users.html">Back to user directory</a>
+                    </div>
+                </div>
+                <div class="stat-strip" aria-label="User summary">
+                    <div class="stat-card">
+                        <strong><span class="status-pill status-approved" style="font-size:13px">Active</span></strong>
+                        <span>Account status</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>Approver</strong>
+                        <span>Role</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>3</strong>
+                        <span>Forms assigned</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="form-builder-grid">
+
+                <!-- Left: edit form -->
+                <section class="surface-panel table-panel">
+                    <div class="user-avatar-block">
+                        <div class="user-avatar-lg" id="avatar-initials" aria-hidden="true">MS</div>
+                        <div class="user-avatar-meta">
+                            <strong id="avatar-name">Mary Saveley</strong>
+                            <span id="avatar-email">mary.saveley@nhs.net</span>
+                        </div>
+                    </div>
+
+                    <form class="request-form" id="user-form">
+                        <div class="form-grid-two">
+                            <div class="form-field">
+                                <label for="first-name">First name</label>
+                                <input id="first-name" name="first-name" type="text" value="Mary" placeholder="Enter first name">
+                            </div>
+                            <div class="form-field">
+                                <label for="last-name">Last name</label>
+                                <input id="last-name" name="last-name" type="text" value="Saveley" placeholder="Enter last name">
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="email">Email address</label>
+                            <input id="email" name="email" type="email" value="mary.saveley@nhs.net" placeholder="Enter NHS email address">
+                        </div>
+
+                        <div class="form-grid-two">
+                            <div class="form-field">
+                                <label for="role">Role</label>
+                                <select id="role" name="role">
+                                    <option>Admin</option>
+                                    <option selected>Approver</option>
+                                    <option>Requester</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="status">Account status</label>
+                                <select id="status" name="status">
+                                    <option selected>Active</option>
+                                    <option>Inactive</option>
+                                    <option>Suspended</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-two">
+                            <div class="form-field">
+                                <label for="department">Department</label>
+                                <input id="department" name="department" type="text" value="Procurement" placeholder="Enter department">
+                            </div>
+                            <div class="form-field">
+                                <label for="division">Division</label>
+                                <input id="division" name="division" type="text" value="Commercial" placeholder="Enter division">
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="phone">Phone <span style="font-weight:400;color:var(--brand-text-muted)">(optional)</span></label>
+                            <input id="phone" name="phone" type="tel" value="" placeholder="Enter direct dial or extension">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="notes">Notes <span style="font-weight:400;color:var(--brand-text-muted)">(optional)</span></label>
+                            <textarea id="notes" name="notes" rows="3" placeholder="Any relevant notes about this user's responsibilities or limitations."></textarea>
+                        </div>
+
+                        <div class="notice-panel" style="margin-top:6px;margin-bottom:0;padding:16px 18px">
+                            <p style="margin:0;font-size:14px">
+                                <strong>Email notifications:</strong> This user will be emailed at the address above whenever a form reaches a stage they are assigned to approve. Ensure the address is correct before saving.
+                            </p>
+                        </div>
+
+                        <div class="form-actions-row">
+                            <button type="submit" class="primary-action">Save changes</button>
+                            <a class="secondary-action" href="users.html">Cancel</a>
+                            <a class="danger-action" href="users.html">Suspend account</a>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Right sidebar: assignments + activity -->
+                <aside class="sidebar-panel">
+
+                    <section class="surface-panel table-panel">
+                        <h2 style="margin:0 0 6px">Approval chain assignments</h2>
+                        <p style="margin:0 0 18px;color:var(--brand-text-muted);font-size:14px">Form templates where this user is set as an approver. Edit the template to change assignments.</p>
+                        <ul class="assignments-list">
+                            <li>
+                                <div>
+                                    <strong>SFI &mdash; Tender Waiver Justification</strong>
+                                    <span>Step 2 &mdash; Procurement Review</span>
+                                </div>
+                                <a class="table-link" href="formAdmin.html">Edit</a>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>SFI &mdash; Tender Waiver Recommendation</strong>
+                                    <span>Step 3 &mdash; Commercial Review</span>
+                                </div>
+                                <a class="table-link" href="formAdmin.html">Edit</a>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>SFI &mdash; Quotation Waiver Justification</strong>
+                                    <span>Step 2 &mdash; Procurement Review</span>
+                                </div>
+                                <a class="table-link" href="formAdmin.html">Edit</a>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section class="surface-panel table-panel">
+                        <h2 style="margin:0 0 6px">Recent activity</h2>
+                        <p style="margin:0 0 14px;color:var(--brand-text-muted);font-size:14px">Last five actions taken by or assigned to this user.</p>
+                        <ul class="activity-log">
+                            <li>
+                                <div>
+                                    <strong>Approved TWJ0003</strong>
+                                    Tender Waiver Justification &mdash; Sarah Moore
+                                </div>
+                                <span>04 May 2023</span>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Requested more info on TWJ0001</strong>
+                                    Tender Waiver Justification &mdash; Michael Mann
+                                </div>
+                                <span>04 Jan 2023</span>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Approved QWR0005</strong>
+                                    Quotation Waiver Recommendation &mdash; Jane Jones
+                                </div>
+                                <span>20 Jun 2023</span>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Assigned to TWR0012</strong>
+                                    Awaiting action as Procurement Lead
+                                </div>
+                                <span>18 Jun 2023</span>
+                            </li>
+                            <li>
+                                <div>
+                                    <strong>Account created</strong>
+                                    Added by Admin &mdash; Michael Holz
+                                </div>
+                                <span>06 Sep 2023</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Live-update the avatar initials and name/email preview as the user types
+        var firstEl = document.getElementById('first-name');
+        var lastEl  = document.getElementById('last-name');
+        var emailEl = document.getElementById('email');
+
+        function updatePreview() {
+            var first = firstEl.value.trim();
+            var last  = lastEl.value.trim();
+            var full  = [first, last].filter(Boolean).join(' ');
+            var initials = [first[0], last[0]].filter(Boolean).join('').toUpperCase();
+
+            document.getElementById('avatar-initials').textContent = initials || '?';
+            document.getElementById('avatar-name').textContent     = full || 'New user';
+            document.getElementById('avatar-email').textContent    = emailEl.value.trim() || 'No email set';
+            document.getElementById('page-title').textContent      = full || 'New user';
+        }
+
+        firstEl.addEventListener('input', updatePreview);
+        lastEl.addEventListener('input',  updatePreview);
+        emailEl.addEventListener('input', updatePreview);
+
+        // Detect "add new" mode from URL param ?mode=add and blank out the form
+        if (window.location.search.indexOf('mode=add') !== -1) {
+            document.getElementById('page-eyebrow').textContent   = 'Add new user';
+            document.getElementById('page-title').textContent     = 'New user';
+            document.getElementById('page-subtitle').textContent  = 'Fill in the details below and save to create the account.';
+
+            // Clear all pre-filled values
+            ['first-name','last-name','email','department','division','phone','notes'].forEach(function(id) {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('role').value   = 'Requester';
+            document.getElementById('status').value = 'Active';
+            document.getElementById('avatar-initials').textContent = '?';
+            document.getElementById('avatar-name').textContent     = 'New user';
+            document.getElementById('avatar-email').textContent    = 'No email set';
+
+            // Swap action buttons — no suspend for a brand new user
+            var dangerBtn = document.querySelector('.danger-action');
+            if (dangerBtn) dangerBtn.style.display = 'none';
+
+            // Assignments and activity sidebar not relevant for new user
+            document.querySelector('.sidebar-panel').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

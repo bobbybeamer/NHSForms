@@ -130,7 +130,8 @@
                     <aside>
                         <div class="surface-panel table-panel" style="background:var(--brand-surface-muted)">
                             <h2 style="margin:0 0 6px">Approval chain</h2>
-                            <p style="margin:0 0 18px;color:var(--brand-text-muted);font-size:14px">Define the sequence of approvers. Drag steps to reorder. All steps must be passed before a form reaches final approval.</p>
+                            <p style="margin:0 0 4px;color:var(--brand-text-muted);font-size:14px">Choose approvers from the system user list. All steps must be passed before a form is fully approved.</p>
+                            <p style="margin:0 0 18px;font-size:13px"><a class="table-link" href="users.html">Manage users</a> &mdash; only Admins and Approvers appear below.</p>
 
                             <ol class="chain-step-list" id="chain-list">
                                 <li class="chain-step-item">
@@ -144,38 +145,42 @@
                                 <li class="chain-step-item">
                                     <div class="chain-step-num">2</div>
                                     <div class="chain-step-info">
-                                        <input type="text" placeholder="Step name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
-                                        <input type="text" placeholder="Assigned approver or role" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                        <input type="text" placeholder="Step name (e.g. Procurement Review)" class="chain-step-name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <select class="chain-user-select" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff"></select>
+                                        <div class="chain-user-email" style="margin-top:5px;font-size:12px;color:var(--brand-text-muted)"></div>
                                     </div>
                                     <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
                                 </li>
                                 <li class="chain-step-item">
                                     <div class="chain-step-num">3</div>
                                     <div class="chain-step-info">
-                                        <input type="text" value="Commercial Review" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
-                                        <input type="text" value="Commercial Lead" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                        <input type="text" value="Commercial Review" class="chain-step-name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <select class="chain-user-select" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff"></select>
+                                        <div class="chain-user-email" style="margin-top:5px;font-size:12px;color:var(--brand-text-muted)"></div>
                                     </div>
                                     <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
                                 </li>
                                 <li class="chain-step-item">
                                     <div class="chain-step-num">4</div>
                                     <div class="chain-step-info">
-                                        <input type="text" value="Finance Sign-off" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
-                                        <input type="text" value="Finance Director" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                        <input type="text" value="Finance Sign-off" class="chain-step-name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <select class="chain-user-select" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff"></select>
+                                        <div class="chain-user-email" style="margin-top:5px;font-size:12px;color:var(--brand-text-muted)"></div>
                                     </div>
                                     <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
                                 </li>
                                 <li class="chain-step-item">
                                     <div class="chain-step-num">5</div>
                                     <div class="chain-step-info">
-                                        <input type="text" value="Executive Approval" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
-                                        <input type="text" value="Chief Executive / CFO" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                        <input type="text" value="Executive Approval" class="chain-step-name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <select class="chain-user-select" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff"></select>
+                                        <div class="chain-user-email" style="margin-top:5px;font-size:12px;color:var(--brand-text-muted)"></div>
                                     </div>
                                     <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
                                 </li>
                             </ol>
 
-                            <button type="button" class="secondary-action" style="margin-top:16px;width:100%" onclick="addChainStep()">+ Add approval step</button>
+                            <button type="button" class="secondary-action" style="margin-top:16px;width:100%" id="add-step-btn">+ Add approval step</button>
                         </div>
                     </aside>
                 </div>
@@ -337,23 +342,76 @@
     </div>
 
     <script>
-        // Add a new editable chain step
+        // ── System user list ─────────────────────────────────────────────
+        // Source of truth for the approval chain picker.
+        // In production this would be fetched from the backend.
+        // Only Admin and Approver roles appear as selectable approvers.
+        var SYSTEM_USERS = [
+            { id: 1, name: 'Michael Holz',    email: 'michael.holz@nhs.net',    role: 'Admin',    status: 'Active' },
+            { id: 4, name: 'Mary Saveley',    email: 'mary.saveley@nhs.net',    role: 'Approver', status: 'Active' },
+            { id: 5, name: 'Martin Sommer',   email: 'martin.sommer@nhs.net',   role: 'Approver', status: 'Inactive' },
+        ];
+
+        var INPUT_STYLE = 'width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff';
+
+        // Build the <option> elements for a user select dropdown
+        function buildUserOptions(selectedId) {
+            var html = '<option value="">— Select approver —</option>';
+            SYSTEM_USERS.forEach(function(u) {
+                var label = u.name + ' (' + u.role + ')' + (u.status !== 'Active' ? ' — ' + u.status : '');
+                var sel   = (selectedId && selectedId === u.id) ? ' selected' : '';
+                var dis   = (u.status !== 'Active') ? ' disabled' : '';
+                html += '<option value="' + u.id + '" data-email="' + u.email + '"' + sel + dis + '>' + label + '</option>';
+            });
+            return html;
+        }
+
+        // Populate all existing selects on page load
+        function populateAllSelects() {
+            document.querySelectorAll('.chain-user-select').forEach(function(sel) {
+                var currentVal = sel.value;
+                sel.innerHTML  = buildUserOptions(null);
+                if (currentVal) sel.value = currentVal;
+                updateEmailHint(sel);
+                sel.addEventListener('change', function() { updateEmailHint(this); });
+            });
+        }
+
+        // Show the selected user's email beneath the dropdown
+        function updateEmailHint(sel) {
+            var hint     = sel.closest('.chain-step-info').querySelector('.chain-user-email');
+            var selected = sel.options[sel.selectedIndex];
+            if (selected && selected.dataset.email) {
+                hint.textContent = 'Notification email: ' + selected.dataset.email;
+            } else {
+                hint.textContent = '';
+            }
+        }
+
+        // Add a new chain step with a user picker
         function addChainStep() {
-            var list = document.getElementById('chain-list');
-            var items = list.querySelectorAll('.chain-step-item');
-            var nextNum = items.length + 1;
+            var list    = document.getElementById('chain-list');
+            var nextNum = list.querySelectorAll('.chain-step-item').length + 1;
 
             var li = document.createElement('li');
             li.className = 'chain-step-item';
             li.innerHTML =
                 '<div class="chain-step-num">' + nextNum + '</div>' +
                 '<div class="chain-step-info">' +
-                  '<input type="text" placeholder="Step name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">' +
-                  '<input type="text" placeholder="Assigned approver or role" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">' +
+                  '<input type="text" placeholder="Step name (e.g. Finance Review)" class="chain-step-name" style="' + INPUT_STYLE + ';margin-bottom:6px">' +
+                  '<select class="chain-user-select" style="' + INPUT_STYLE + '">' + buildUserOptions(null) + '</select>' +
+                  '<div class="chain-user-email" style="margin-top:5px;font-size:12px;color:var(--brand-text-muted)"></div>' +
                 '</div>' +
-                '<button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step" onclick="removeChainStep(this)">&#10005;</button>';
+                '<button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>';
 
             list.appendChild(li);
+
+            var newSel = li.querySelector('.chain-user-select');
+            newSel.addEventListener('change', function() { updateEmailHint(this); });
+
+            var removeBtn = li.querySelector('.danger-action');
+            removeBtn.addEventListener('click', function() { removeChainStep(this); });
+
             renumberChain();
         }
 
@@ -363,10 +421,9 @@
         }
 
         function renumberChain() {
-            var items = document.querySelectorAll('#chain-list .chain-step-item');
-            items.forEach(function(item, i) {
+            document.querySelectorAll('#chain-list .chain-step-item').forEach(function(item, i) {
                 var num = item.querySelector('.chain-step-num');
-                if (num && num.textContent !== '&#10003;' && !num.innerHTML.includes('&#10003;')) {
+                if (num && !num.innerHTML.includes('&#10003;')) {
                     num.textContent = i + 1;
                 }
             });
@@ -377,6 +434,8 @@
             btn.addEventListener('click', function() { removeChainStep(this); });
         });
 
+        document.getElementById('add-step-btn').addEventListener('click', addChainStep);
+
         // Filter chip toggle (visual only)
         document.querySelectorAll('.filter-chip').forEach(function(chip) {
             chip.addEventListener('click', function() {
@@ -385,6 +444,9 @@
                 this.classList.add('is-selected');
             });
         });
+
+        // Init on load
+        populateAllSelects();
     </script>
 </body>
 </html>
