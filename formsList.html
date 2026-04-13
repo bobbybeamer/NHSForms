@@ -58,12 +58,14 @@
 
         .filters-panel { align-items: center; }
 
+        .action-cell { display: flex; flex-direction: column; gap: 4px; }
         .action-open   { color: var(--brand-primary); font-weight: 800; }
         .action-view   { color: var(--brand-text-muted); font-weight: 800; }
         .action-track  { color: var(--brand-success); font-weight: 800; }
         .action-update { color: var(--brand-warning); font-weight: 800; }
-        a.action-open:hover, a.action-view:hover,
-        a.action-track:hover, a.action-update:hover { text-decoration: underline; }
+        .action-submit { color: var(--brand-primary-dark); font-weight: 800; font-size: 12px; }
+        a.action-open:hover, a.action-view:hover, a.action-track:hover,
+        a.action-update:hover, a.action-submit:hover { text-decoration: underline; }
     </style>
 </head>
 <body class="app-page">
@@ -145,7 +147,7 @@
                             </tr>
                         </thead>
                         <tbody id="forms-tbody">
-                            <!-- data-type: tender | quotation   data-status: pending | approved | review | overdue -->
+                            <!-- data-type: tender | quotation   data-status: pending | approved | review | overdue | needs-update -->
                             <tr data-type="tender" data-status="pending" data-requester="Jane Jones" data-code="TWJ0001">
                                 <td>TWJ0001</td>
                                 <td>Tender Waiver Justification</td>
@@ -153,7 +155,10 @@
                                 <td>01 Jan 2023</td>
                                 <td><span class="status-pill status-pending">Pending</span></td>
                                 <td>Awaiting final commercial review.</td>
-                                <td><a class="action-open" href="SFI - Tender Waiver Justification.html">Open</a></td>
+                                <td class="action-cell">
+                                    <a class="action-open" href="SFI - Tender Waiver Justification.html">Open</a>
+                                    <a class="action-submit" href="SFI - Tender Waiver Justification.html#submit">Submit</a>
+                                </td>
                             </tr>
                             <tr data-type="tender" data-status="approved" data-requester="Mary Martin" data-code="TWR0002">
                                 <td>TWR0002</td>
@@ -162,7 +167,9 @@
                                 <td>09 Jan 2023</td>
                                 <td><span class="status-pill status-approved">Approved</span></td>
                                 <td>Approved and ready for filing.</td>
-                                <td><a class="action-view" href="newForm.html">View</a></td>
+                                <td class="action-cell">
+                                    <a class="action-view" href="approvalDetail.html">View</a>
+                                </td>
                             </tr>
                             <tr data-type="tender" data-status="approved" data-requester="Sarah Moore" data-code="TWJ0003">
                                 <td>TWJ0003</td>
@@ -171,16 +178,21 @@
                                 <td>04 May 2023</td>
                                 <td><span class="status-pill status-approved">Approved</span></td>
                                 <td>Approved with budget note attached.</td>
-                                <td><a class="action-view" href="SFI - Tender Waiver Justification.html">View</a></td>
+                                <td class="action-cell">
+                                    <a class="action-view" href="SFI - Tender Waiver Justification.html">View</a>
+                                </td>
                             </tr>
-                            <tr data-type="quotation" data-status="pending" data-requester="James Taylor" data-code="QWJ0004">
+                            <tr data-type="quotation" data-status="needs-update" data-requester="James Taylor" data-code="QWJ0004">
                                 <td>QWJ0004</td>
                                 <td>Quotation Waiver Justification</td>
                                 <td>James Taylor</td>
                                 <td>01 Jun 2023</td>
-                                <td><span class="status-pill status-pending">Pending</span></td>
-                                <td>Needs supporting market evidence.</td>
-                                <td><a class="action-update" href="newForm.html">Update</a></td>
+                                <td><span class="status-pill status-overdue">Needs update</span></td>
+                                <td>Approver requested supporting market evidence before this can advance.</td>
+                                <td class="action-cell">
+                                    <a class="action-update" href="newForm.html">Update</a>
+                                    <a class="action-submit" href="newForm.html">Resubmit</a>
+                                </td>
                             </tr>
                             <tr data-type="quotation" data-status="review" data-requester="Jane Jones" data-code="QWR0005">
                                 <td>QWR0005</td>
@@ -189,7 +201,9 @@
                                 <td>15 Jun 2023</td>
                                 <td><span class="status-pill status-review">In review</span></td>
                                 <td>Under procurement team review.</td>
-                                <td><a class="action-track" href="approvalDetail.html">Track</a></td>
+                                <td class="action-cell">
+                                    <a class="action-track" href="approvalDetail.html">Track</a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -228,7 +242,7 @@
                 var typeMatch   = activeFilter === 'all'
                                || (activeFilter === 'tender'    && row.dataset.type   === 'tender')
                                || (activeFilter === 'quotation' && row.dataset.type   === 'quotation')
-                               || (activeFilter === 'pending'   && row.dataset.status === 'pending');
+                               || (activeFilter === 'pending'   && (row.dataset.status === 'pending' || row.dataset.status === 'needs-update'));
 
                 var searchMatch = !searchTerm
                                || row.dataset.code.toLowerCase().includes(searchTerm)

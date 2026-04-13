@@ -34,22 +34,32 @@
                 <div>
                     <p class="eyebrow">New request</p>
                     <h1>Start a waiver request with the core information in one place.</h1>
-                    <p class="hero-text">This page gives requesters a clean starting point before handing off to the detailed standing financial instruction forms.</p>
+                    <p class="hero-text">Fill in the summary below. You can save a draft to return later, complete the detailed form, or submit directly for approval once all sections are done.</p>
                 </div>
                 <div class="hero-actions">
                     <a class="secondary-action" href="forms.html">Back to templates</a>
                 </div>
             </section>
 
+            <!-- Status workflow banner -->
+            <div class="notice-panel" style="margin-bottom:22px">
+                <h2 style="font-size:16px;margin-bottom:6px">How status changes work</h2>
+                <p style="margin:0">
+                    <strong>Requester:</strong> complete this summary, finish the detailed form, then click <em>Submit for approval</em>. The form enters the approval queue and assigned approvers are notified by email. If an approver requests more information the form returns here for you to update and resubmit.<br>
+                    <strong>Approver:</strong> use the <a class="table-link" href="approvalList.html">Approval List</a> to review, approve, or deny forms assigned to you.
+                </p>
+            </div>
+
             <section class="surface-panel form-workspace">
                 <div class="table-panel-header">
                     <div>
                         <h2>Request summary</h2>
-                        <p>Capture the key details now, then continue into the relevant template.</p>
+                        <p>Capture the key details, then continue to the detailed form or submit if all sections are complete.</p>
                     </div>
+                    <span class="status-pill status-pending" id="form-status-badge">Draft</span>
                 </div>
 
-                <form class="request-form">
+                <form class="request-form" id="request-form">
                     <div class="form-field">
                         <label for="request-title">Request title</label>
                         <input id="request-title" name="request-title" type="text" placeholder="Example: Cardiology imaging support waiver">
@@ -107,12 +117,42 @@
                     </div>
 
                     <div class="form-actions-row">
-                        <a class="primary-action" href="SFI - Tender Waiver Justification.html">Continue to detailed form</a>
-                        <a class="secondary-action" href="formsList.html">Save as draft</a>
+                        <button type="button" class="primary-action" id="submit-btn" onclick="submitForApproval()">Submit for approval</button>
+                        <a class="secondary-action" href="SFI - Tender Waiver Justification.html">Complete detailed form</a>
+                        <button type="button" class="secondary-action" onclick="saveAsDraft()">Save as draft</button>
                     </div>
                 </form>
+
+                <!-- Confirmation shown after submit (hidden by default) -->
+                <div id="submit-confirm" style="display:none;margin-top:28px;padding:24px;border-radius:14px;border:1px solid rgba(11,107,58,0.2);background:rgba(11,107,58,0.06)">
+                    <strong style="display:block;font-size:16px;font-weight:800;color:var(--brand-success);margin-bottom:6px">Submitted for approval</strong>
+                    <p style="margin:0 0 16px;color:var(--brand-text-muted)">Your request has entered the approval queue. Assigned approvers have been notified by email. You can track progress on the form list or approval list.</p>
+                    <div class="form-actions-row" style="margin-top:0">
+                        <a class="primary-action" href="formsList.html">Go to form list</a>
+                        <a class="secondary-action" href="approvalList.html">View approval queue</a>
+                    </div>
+                </div>
             </section>
         </main>
+
+        <script>
+            function submitForApproval() {
+                document.getElementById('request-form').style.display = 'none';
+                document.getElementById('submit-confirm').style.display = 'block';
+                document.getElementById('form-status-badge').textContent = 'Pending';
+                document.getElementById('form-status-badge').className = 'status-pill status-review';
+            }
+
+            function saveAsDraft() {
+                var badge = document.getElementById('form-status-badge');
+                badge.textContent = 'Draft saved';
+                badge.className   = 'status-pill status-pending';
+                setTimeout(function() {
+                    badge.textContent = 'Draft';
+                    badge.className   = 'status-pill status-pending';
+                }, 2000);
+            }
+        </script>
     </div>
 </body>
 </html>

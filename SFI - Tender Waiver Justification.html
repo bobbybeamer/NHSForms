@@ -228,19 +228,70 @@
                 </section>
 
                 <section class="surface-panel section-card declaration-card">
-                    <div class="section-heading">
-                        <p class="card-kicker">Section 5</p>
-                        <h2>Requester declaration</h2>
+                    <div class="section-heading" style="display:grid;grid-template-columns:1fr auto;align-items:start;gap:16px">
+                        <div>
+                            <p class="card-kicker">Section 5</p>
+                            <h2>Requester declaration</h2>
+                        </div>
+                        <span class="status-pill status-pending" id="sfi-status-badge">Draft</span>
                     </div>
-                    <p class="section-intro">By saving this form, the requester confirms that they do not hold any direct or indirect interests with the supplier or contractor. If such interests are later identified, this may constitute fraud or bribery and may lead to disciplinary or criminal proceedings.</p>
-                    <div class="form-actions-row">
-                        <a class="primary-action" href="formsList.html">Save request</a>
+                    <p class="section-intro">By submitting this form, the requester confirms that they do not hold any direct or indirect interests with the supplier or contractor. If such interests are later identified, this may constitute fraud or bribery and may lead to disciplinary or criminal proceedings.</p>
+
+                    <div class="form-field" style="margin-top:6px">
+                        <label style="display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer">
+                            <input type="checkbox" id="declaration-check" style="width:18px;height:18px;flex-shrink:0">
+                            I confirm I have no direct or indirect interest with the proposed supplier and that all information provided is accurate to the best of my knowledge.
+                        </label>
+                    </div>
+
+                    <div class="form-actions-row" id="sfi-actions">
+                        <button type="button" class="primary-action" id="sfi-submit-btn" onclick="sfiSubmit()" disabled style="opacity:0.5;cursor:not-allowed">Submit for approval</button>
+                        <button type="button" class="secondary-action" onclick="sfiSaveDraft()">Save as draft</button>
                         <a class="secondary-action" href="newForm.html">Back to summary</a>
+                    </div>
+
+                    <!-- Post-submit confirmation -->
+                    <div id="sfi-confirm" style="display:none;margin-top:24px;padding:20px;border-radius:12px;border:1px solid rgba(11,107,58,0.2);background:rgba(11,107,58,0.06)">
+                        <strong style="display:block;font-size:15px;font-weight:800;color:var(--brand-success);margin-bottom:6px">Submitted for approval</strong>
+                        <p style="margin:0 0 14px;color:var(--brand-text-muted)">Your form is now in the approval queue. Assigned approvers have been notified by email. You can track progress from the form list.</p>
+                        <div class="form-actions-row" style="margin-top:0">
+                            <a class="primary-action" href="formsList.html">Go to form list</a>
+                            <a class="secondary-action" href="approvalList.html">View approval queue</a>
+                        </div>
                     </div>
                 </section>
             </form>
         </main>
     </div>
+
+    <script>
+        // Enable submit button only when declaration is checked
+        var check     = document.getElementById('declaration-check');
+        var submitBtn = document.getElementById('sfi-submit-btn');
+
+        check.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+            submitBtn.style.opacity = this.checked ? '1' : '0.5';
+            submitBtn.style.cursor  = this.checked ? 'pointer' : 'not-allowed';
+        });
+
+        function sfiSubmit() {
+            document.getElementById('sfi-actions').style.display  = 'none';
+            document.getElementById('declaration-check').closest('.form-field').style.display = 'none';
+            document.getElementById('sfi-confirm').style.display  = 'block';
+            document.getElementById('sfi-status-badge').textContent = 'Pending';
+            document.getElementById('sfi-status-badge').className    = 'status-pill status-review';
+        }
+
+        function sfiSaveDraft() {
+            var badge = document.getElementById('sfi-status-badge');
+            badge.textContent = 'Draft saved';
+            badge.className   = 'status-pill status-pending';
+            setTimeout(function() {
+                badge.textContent = 'Draft';
+            }, 2000);
+        }
+    </script>
 </body>
 </html>
 
