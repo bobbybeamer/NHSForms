@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Users | Concise Forms Management</title>
+    <meta name="description" content="Manage portal users and roles">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a class="is-active" href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-users">
+                <div>
+                    <p class="eyebrow">User management</p>
+                    <h1>Keep roles, access, and activity aligned.</h1>
+                    <p class="hero-text">Review the current user base, spot inactive accounts, and keep responsibilities current.</p>
+                </div>
+                <div class="hero-actions">
+                    <a class="primary-action" href="newForm.html">Add new user</a>
+                    <a class="secondary-action" href="#">Export report</a>
+                </div>
+            </section>
+
+            <section class="surface-panel table-panel">
+                <div class="table-panel-header">
+                    <div>
+                        <h2>User directory</h2>
+                        <p>Current user records across administration, requesters, and approvers.</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table app-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Date created</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Michael Holz</td>
+                                <td>04 Oct 2023</td>
+                                <td>Admin</td>
+                                <td><span class="status-pill status-approved">Active</span></td>
+                                <td><a class="table-link" href="newForm.html">Manage</a></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Paula Wilson</td>
+                                <td>05 Aug 2023</td>
+                                <td>Requester</td>
+                                <td><span class="status-pill status-approved">Active</span></td>
+                                <td><a class="table-link" href="newForm.html">Manage</a></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Antonio Moreno</td>
+                                <td>11 May 2023</td>
+                                <td>Requester</td>
+                                <td><span class="status-pill status-overdue">Suspended</span></td>
+                                <td><a class="table-link" href="newForm.html">Review</a></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Mary Saveley</td>
+                                <td>06 Sep 2023</td>
+                                <td>Approver</td>
+                                <td><span class="status-pill status-approved">Active</span></td>
+                                <td><a class="table-link" href="newForm.html">Manage</a></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Martin Sommer</td>
+                                <td>12 Aug 2023</td>
+                                <td>Approver</td>
+                                <td><span class="status-pill status-review">Inactive</span></td>
+                                <td><a class="table-link" href="newForm.html">Review</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

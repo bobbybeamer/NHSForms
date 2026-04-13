@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form List | Concise Forms Management</title>
+    <meta name="description" content="Review and manage submitted forms">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a class="is-active" href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-list">
+                <div>
+                    <p class="eyebrow">Form register</p>
+                    <h1>Submitted forms at a glance.</h1>
+                    <p class="hero-text">Track recent requests, review status, and jump into the records that need action.</p>
+                </div>
+                <div class="stat-strip" aria-label="Summary metrics">
+                    <div class="stat-card">
+                        <strong>27</strong>
+                        <span>Total active</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>9</strong>
+                        <span>Pending updates</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>5</strong>
+                        <span>Approved today</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="surface-panel filters-panel">
+                <button type="button" class="filter-chip is-selected">All requesters</button>
+                <button type="button" class="filter-chip">Tender waivers</button>
+                <button type="button" class="filter-chip">Quotation waivers</button>
+                <button type="button" class="filter-chip">Pending only</button>
+            </section>
+
+            <section class="surface-panel table-panel">
+                <div class="table-panel-header">
+                    <div>
+                        <h2>All forms</h2>
+                        <p>Sample records shown below. Replace with live data when the backend is ready.</p>
+                    </div>
+                    <a class="secondary-action" href="forms.html">Open form templates</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table app-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Requester</th>
+                                <th>Requested</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TWJ0001</td>
+                                <td>Tender Waiver Justification</td>
+                                <td>Jane Jones</td>
+                                <td>01 Jan 2023</td>
+                                <td><span class="status-pill status-pending">Pending</span></td>
+                                <td>Awaiting final commercial review.</td>
+                                <td><a class="table-link" href="newForm.html">Open</a></td>
+                            </tr>
+                            <tr>
+                                <td>TWR0002</td>
+                                <td>Tender Waiver Recommendation</td>
+                                <td>Mary Martin</td>
+                                <td>09 Jan 2023</td>
+                                <td><span class="status-pill status-approved">Approved</span></td>
+                                <td>Approved and ready for filing.</td>
+                                <td><a class="table-link" href="newForm.html">View</a></td>
+                            </tr>
+                            <tr>
+                                <td>TWJ0003</td>
+                                <td>Tender Waiver Justification</td>
+                                <td>Sarah Moore</td>
+                                <td>04 May 2023</td>
+                                <td><span class="status-pill status-approved">Approved</span></td>
+                                <td>Approved with budget note attached.</td>
+                                <td><a class="table-link" href="newForm.html">View</a></td>
+                            </tr>
+                            <tr>
+                                <td>QWJ0004</td>
+                                <td>Quotation Waiver Justification</td>
+                                <td>James Taylor</td>
+                                <td>01 Jun 2023</td>
+                                <td><span class="status-pill status-pending">Pending</span></td>
+                                <td>Needs supporting market evidence.</td>
+                                <td><a class="table-link" href="newForm.html">Update</a></td>
+                            </tr>
+                            <tr>
+                                <td>QWR0005</td>
+                                <td>Quotation Waiver Recommendation</td>
+                                <td>Jane Jones</td>
+                                <td>15 Jun 2023</td>
+                                <td><span class="status-pill status-review">In review</span></td>
+                                <td>Under procurement team review.</td>
+                                <td><a class="table-link" href="newForm.html">Track</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approval Detail | Concise Forms Management</title>
+    <meta name="description" content="Full approval chain view for a waiver request">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a class="is-active" href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-approval">
+                <div>
+                    <p class="eyebrow">Approval detail &mdash; TWJ0001</p>
+                    <h1>Tender Waiver Justification</h1>
+                    <p class="hero-text">Cardiology imaging support waiver &mdash; submitted by Michael Mann, 01 Jan 2023.</p>
+                    <div class="hero-actions" style="margin-top:24px">
+                        <a class="secondary-action" href="approvalList.html">Back to approval list</a>
+                        <a class="secondary-action" href="SFI - Tender Waiver Justification.html">View full form</a>
+                    </div>
+                </div>
+                <div class="stat-strip" aria-label="Form status">
+                    <div class="stat-card">
+                        <strong><span class="status-pill status-pending" style="font-size:13px">Pending</span></strong>
+                        <span>Current status</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>Step 2</strong>
+                        <span>of 5 stages</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>£42,500</strong>
+                        <span>Est. value excl. VAT</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Approval workflow stepper -->
+            <nav class="workflow-stepper" aria-label="Approval stages">
+                <div class="workflow-step is-complete">
+                    <div class="step-dot">&#10003;</div>
+                    <div class="step-label">Submitted</div>
+                    <div class="step-date">01 Jan 2023</div>
+                </div>
+                <div class="workflow-step is-active">
+                    <div class="step-dot">2</div>
+                    <div class="step-label">Procurement Review</div>
+                    <div class="step-date">Awaiting action</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-dot">3</div>
+                    <div class="step-label">Commercial Review</div>
+                    <div class="step-date">&mdash;</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-dot">4</div>
+                    <div class="step-label">Finance Sign-off</div>
+                    <div class="step-date">&mdash;</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-dot">5</div>
+                    <div class="step-label">Executive Approval</div>
+                    <div class="step-date">&mdash;</div>
+                </div>
+            </nav>
+
+            <div class="approval-detail-grid">
+
+                <!-- Left column: history + current decision -->
+                <div>
+                    <!-- Current action panel -->
+                    <section class="surface-panel table-panel" style="margin-bottom:22px">
+                        <div class="table-panel-header">
+                            <div>
+                                <h2>Current stage &mdash; Procurement Review</h2>
+                                <p>This request is awaiting a decision from the assigned procurement lead. Approve to advance to Commercial Review, or deny to close the request.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-field" style="margin-bottom:18px">
+                            <label for="decision-note">Decision note <span style="font-weight:400;color:var(--brand-text-muted)">(optional)</span></label>
+                            <textarea id="decision-note" name="decision-note" rows="4" placeholder="Add context, conditions, or reasons for your decision. This will be recorded in the audit trail."></textarea>
+                        </div>
+
+                        <div class="form-actions-row">
+                            <a class="primary-action" href="approvalList.html">Approve &amp; advance</a>
+                            <a class="secondary-action" href="approvalList.html">Request more information</a>
+                            <a class="danger-action" href="approvalList.html">Deny request</a>
+                        </div>
+                    </section>
+
+                    <!-- Audit trail -->
+                    <section class="surface-panel table-panel">
+                        <div class="table-panel-header">
+                            <div>
+                                <h2>Audit trail</h2>
+                                <p>A full record of every action taken on this request, in chronological order.</p>
+                            </div>
+                        </div>
+
+                        <div class="approval-history">
+                            <div class="history-entry">
+                                <div class="history-avatar" aria-hidden="true">MM</div>
+                                <div class="history-body">
+                                    <div class="history-meta">
+                                        <span class="history-name">Michael Mann</span>
+                                        <span class="status-pill status-approved" style="font-size:11px">Submitted</span>
+                                        <span class="history-time">01 Jan 2023 at 09:14</span>
+                                    </div>
+                                    <p>Form submitted for procurement review. Supplier: Siemens Healthineers. Estimated value £42,500 excl. VAT. Waiver basis selected: Option E (specialist expertise, single source).</p>
+                                </div>
+                            </div>
+
+                            <div class="history-entry">
+                                <div class="history-avatar" aria-hidden="true">A1</div>
+                                <div class="history-body">
+                                    <div class="history-meta">
+                                        <span class="history-name">Approver 1 &mdash; Procurement Lead</span>
+                                        <span class="status-pill status-review" style="font-size:11px">Information requested</span>
+                                        <span class="history-time">04 Jan 2023 at 11:02</span>
+                                    </div>
+                                    <p>Please provide the market scan evidence referenced in Section 2. The justification refers to a prior supplier assessment but no attachment has been included. Request cannot advance without supporting documentation.</p>
+                                </div>
+                            </div>
+
+                            <div class="history-entry">
+                                <div class="history-avatar" aria-hidden="true">MM</div>
+                                <div class="history-body">
+                                    <div class="history-meta">
+                                        <span class="history-name">Michael Mann</span>
+                                        <span class="status-pill status-approved" style="font-size:11px">Evidence added</span>
+                                        <span class="history-time">06 Jan 2023 at 16:38</span>
+                                    </div>
+                                    <p>Market scan report (Nov 2022) uploaded to the procurement shared drive and reference added to form Section 2. Three alternative suppliers were assessed; none held the required MHRA certification for this device category.</p>
+                                </div>
+                            </div>
+
+                            <div class="history-entry">
+                                <div class="history-avatar" aria-hidden="true">A1</div>
+                                <div class="history-body">
+                                    <div class="history-meta">
+                                        <span class="history-name">Approver 1 &mdash; Procurement Lead</span>
+                                        <span class="status-pill status-pending" style="font-size:11px">Awaiting decision</span>
+                                        <span class="history-time">08 Jan 2023 at 09:50</span>
+                                    </div>
+                                    <p>Evidence noted. Currently reviewing against CP105 Section D Point 9.4. Decision expected by end of week.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right sidebar: form summary + chain config -->
+                <aside class="sidebar-panel">
+                    <section class="surface-panel table-panel">
+                        <h2 style="margin:0 0 18px">Request details</h2>
+                        <ul class="detail-list">
+                            <li><span class="dl-label">Form code</span><span class="dl-value">TWJ0001</span></li>
+                            <li><span class="dl-label">Form type</span><span class="dl-value">Tender Waiver Justification</span></li>
+                            <li><span class="dl-label">Requester</span><span class="dl-value">Michael Mann</span></li>
+                            <li><span class="dl-label">Department</span><span class="dl-value">Cardiology</span></li>
+                            <li><span class="dl-label">Division</span><span class="dl-value">Diagnostics &amp; Imaging</span></li>
+                            <li><span class="dl-label">Supplier</span><span class="dl-value">Siemens Healthineers</span></li>
+                            <li><span class="dl-label">Est. value</span><span class="dl-value">£42,500 excl. VAT</span></li>
+                            <li><span class="dl-label">Waiver basis</span><span class="dl-value">Option E</span></li>
+                            <li><span class="dl-label">Policy ref.</span><span class="dl-value">CP105</span></li>
+                            <li><span class="dl-label">Submitted</span><span class="dl-value">01 Jan 2023</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="surface-panel table-panel">
+                        <h2 style="margin:0 0 6px">Approval chain</h2>
+                        <p style="margin:0 0 18px;color:var(--brand-text-muted);font-size:14px">Defined by the form template. Contact an admin to change the chain for this form type.</p>
+                        <ol class="chain-step-list">
+                            <li class="chain-step-item">
+                                <div class="chain-step-num" style="background:var(--brand-success)">&#10003;</div>
+                                <div class="chain-step-info">
+                                    <strong>Submitted</strong>
+                                    <span>Requester &mdash; Michael Mann</span>
+                                </div>
+                                <span class="status-pill status-approved" style="font-size:11px">Done</span>
+                            </li>
+                            <li class="chain-step-item">
+                                <div class="chain-step-num">2</div>
+                                <div class="chain-step-info">
+                                    <strong>Procurement Review</strong>
+                                    <span>Approver 1 &mdash; Procurement Lead</span>
+                                </div>
+                                <span class="status-pill status-pending" style="font-size:11px">Active</span>
+                            </li>
+                            <li class="chain-step-item">
+                                <div class="chain-step-num" style="background:var(--brand-border);color:var(--brand-text-muted)">3</div>
+                                <div class="chain-step-info">
+                                    <strong>Commercial Review</strong>
+                                    <span>Approver 3 &mdash; Commercial Lead</span>
+                                </div>
+                                <span class="status-pill" style="font-size:11px;background:var(--brand-surface-muted);color:var(--brand-text-muted)">Waiting</span>
+                            </li>
+                            <li class="chain-step-item">
+                                <div class="chain-step-num" style="background:var(--brand-border);color:var(--brand-text-muted)">4</div>
+                                <div class="chain-step-info">
+                                    <strong>Finance Sign-off</strong>
+                                    <span>Approver 5 &mdash; Finance Director</span>
+                                </div>
+                                <span class="status-pill" style="font-size:11px;background:var(--brand-surface-muted);color:var(--brand-text-muted)">Waiting</span>
+                            </li>
+                            <li class="chain-step-item">
+                                <div class="chain-step-num" style="background:var(--brand-border);color:var(--brand-text-muted)">5</div>
+                                <div class="chain-step-info">
+                                    <strong>Executive Approval</strong>
+                                    <span>Chief Executive / CFO</span>
+                                </div>
+                                <span class="status-pill" style="font-size:11px;background:var(--brand-surface-muted);color:var(--brand-text-muted)">Waiting</span>
+                            </li>
+                        </ol>
+                    </section>
+                </aside>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

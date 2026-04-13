@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approval List | Concise Forms Management</title>
+    <meta name="description" content="Review forms awaiting approval">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a class="is-active" href="approvalList.html">Approval List</a>
+                <a href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-approval">
+                <div>
+                    <p class="eyebrow">Approval queue</p>
+                    <h1>Prioritize decisions that keep work moving.</h1>
+                    <p class="hero-text">Review requests waiting for sign-off and focus approvers on the cases that are most urgent.</p>
+                </div>
+                <div class="stat-strip" aria-label="Approval metrics">
+                    <div class="stat-card">
+                        <strong>12</strong>
+                        <span>Awaiting action</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>3</strong>
+                        <span>Escalated today</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>1</strong>
+                        <span>Overdue</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="surface-panel filters-panel">
+                <button type="button" class="filter-chip is-selected">All approvers</button>
+                <button type="button" class="filter-chip">Priority review</button>
+                <button type="button" class="filter-chip">Due this week</button>
+                <button type="button" class="filter-chip">Needs clarification</button>
+            </section>
+
+            <section class="surface-panel table-panel">
+                <div class="table-panel-header">
+                    <div>
+                        <h2>Forms requiring approval</h2>
+                        <p>Use this queue to approve, deny, or inspect the next actions for each request.</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table app-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Type</th>
+                                <th>Requester</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th>Workflow</th>
+                                <th>Approver</th>
+                                <th>Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a class="table-link" href="approvalDetail.html">TWJ0001</a></td>
+                                <td>Tender Waiver Justification</td>
+                                <td>Michael Mann</td>
+                                <td>01 Jan 2023</td>
+                                <td><span class="status-pill status-pending">Pending</span></td>
+                                <td>
+                                    <div class="workflow-row-indicator" title="Step 2 of 5: Procurement Review">
+                                        <div class="wri-dot done"></div>
+                                        <div class="wri-dot active"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <span class="wri-label">2 / 5</span>
+                                    </div>
+                                </td>
+                                <td>Approver 1</td>
+                                <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Approve</a><a class="table-link table-link-muted" href="approvalDetail.html">Deny</a></span></td>
+                            </tr>
+                            <tr>
+                                <td><a class="table-link" href="approvalDetail.html">QWJ0007</a></td>
+                                <td>Quotation Waiver Justification</td>
+                                <td>Sophie Hunt</td>
+                                <td>12 Jun 2023</td>
+                                <td><span class="status-pill status-review">In review</span></td>
+                                <td>
+                                    <div class="workflow-row-indicator" title="Step 3 of 5: Commercial Review">
+                                        <div class="wri-dot done"></div>
+                                        <div class="wri-dot done"></div>
+                                        <div class="wri-dot active"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <span class="wri-label">3 / 5</span>
+                                    </div>
+                                </td>
+                                <td>Approver 4</td>
+                                <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Review</a><a class="table-link table-link-muted" href="approvalDetail.html">Hold</a></span></td>
+                            </tr>
+                            <tr>
+                                <td><a class="table-link" href="approvalDetail.html">TWR0012</a></td>
+                                <td>Tender Waiver Recommendation</td>
+                                <td>John Smith</td>
+                                <td>18 Jun 2023</td>
+                                <td><span class="status-pill status-overdue">Overdue</span></td>
+                                <td>
+                                    <div class="workflow-row-indicator" title="Step 2 of 5: Procurement Review — Overdue">
+                                        <div class="wri-dot done"></div>
+                                        <div class="wri-dot rejected"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <div class="wri-dot waiting"></div>
+                                        <span class="wri-label">2 / 5</span>
+                                    </div>
+                                </td>
+                                <td>Approver 2</td>
+                                <td><span class="decision-actions"><a class="table-link" href="approvalDetail.html">Escalate</a><a class="table-link table-link-muted" href="approvalDetail.html">Deny</a></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

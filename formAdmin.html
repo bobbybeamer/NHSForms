@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form Template Admin | Concise Forms Management</title>
+    <meta name="description" content="Add, edit, and configure form templates and their approval chains">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a class="is-active" href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-forms">
+                <div>
+                    <p class="eyebrow">Admin &mdash; Form templates <span class="admin-badge">Admin only</span></p>
+                    <h1>Manage form templates and approval chains.</h1>
+                    <p class="hero-text">Create new templates, edit existing ones, adjust the approval chain for each form type, and archive templates that are no longer in use.</p>
+                    <div class="hero-actions" style="margin-top:24px">
+                        <a class="secondary-action" href="forms.html">Back to template catalogue</a>
+                    </div>
+                </div>
+                <div class="stat-strip" aria-label="Template summary">
+                    <div class="stat-card">
+                        <strong>4</strong>
+                        <span>Active templates</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>1</strong>
+                        <span>Draft</span>
+                    </div>
+                    <div class="stat-card">
+                        <strong>2</strong>
+                        <span>Archived</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Add / edit template form ──────────────────────────────── -->
+            <section class="surface-panel table-panel" style="margin-bottom:22px">
+                <div class="table-panel-header">
+                    <div>
+                        <h2>Add new template</h2>
+                        <p>Complete the fields below and configure the approval chain before publishing. Save as draft to continue editing later.</p>
+                    </div>
+                </div>
+
+                <div class="form-builder-grid">
+                    <!-- Template metadata -->
+                    <div>
+                        <form class="request-form" id="template-form">
+                            <div class="form-grid-two">
+                                <div class="form-field">
+                                    <label for="tmpl-name">Template name</label>
+                                    <input id="tmpl-name" name="tmpl-name" type="text" placeholder="e.g. SFI - Tender Waiver Justification">
+                                </div>
+                                <div class="form-field">
+                                    <label for="tmpl-category">Category</label>
+                                    <select id="tmpl-category" name="tmpl-category">
+                                        <option>Tender</option>
+                                        <option>Quotation</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="tmpl-description">Description</label>
+                                <textarea id="tmpl-description" name="tmpl-description" rows="3" placeholder="Describe when staff should use this form and what it covers."></textarea>
+                            </div>
+
+                            <div class="form-grid-two">
+                                <div class="form-field">
+                                    <label for="tmpl-policy">Policy reference</label>
+                                    <input id="tmpl-policy" name="tmpl-policy" type="text" placeholder="e.g. CP105">
+                                </div>
+                                <div class="form-field">
+                                    <label for="tmpl-threshold">Value threshold (excl. VAT)</label>
+                                    <input id="tmpl-threshold" name="tmpl-threshold" type="text" placeholder="e.g. £138,760">
+                                </div>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="tmpl-guidance">Guidance notice</label>
+                                <textarea id="tmpl-guidance" name="tmpl-guidance" rows="4" placeholder="Important notice shown at the top of the form before the requester starts filling it in."></textarea>
+                            </div>
+
+                            <div class="form-grid-two">
+                                <div class="form-field">
+                                    <label for="tmpl-status">Status</label>
+                                    <select id="tmpl-status" name="tmpl-status">
+                                        <option>Draft</option>
+                                        <option>Active</option>
+                                        <option>Archived</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="tmpl-owner">Template owner</label>
+                                    <input id="tmpl-owner" name="tmpl-owner" type="text" placeholder="Enter responsible team or individual">
+                                </div>
+                            </div>
+
+                            <div class="form-actions-row">
+                                <button type="submit" class="primary-action">Save and publish</button>
+                                <button type="button" class="secondary-action">Save as draft</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Approval chain builder -->
+                    <aside>
+                        <div class="surface-panel table-panel" style="background:var(--brand-surface-muted)">
+                            <h2 style="margin:0 0 6px">Approval chain</h2>
+                            <p style="margin:0 0 18px;color:var(--brand-text-muted);font-size:14px">Define the sequence of approvers. Drag steps to reorder. All steps must be passed before a form reaches final approval.</p>
+
+                            <ol class="chain-step-list" id="chain-list">
+                                <li class="chain-step-item">
+                                    <div class="chain-step-num">1</div>
+                                    <div class="chain-step-info">
+                                        <strong>Submitted</strong>
+                                        <span>Auto &mdash; on form save</span>
+                                    </div>
+                                    <span style="font-size:12px;color:var(--brand-text-muted);font-weight:700">Fixed</span>
+                                </li>
+                                <li class="chain-step-item">
+                                    <div class="chain-step-num">2</div>
+                                    <div class="chain-step-info">
+                                        <input type="text" placeholder="Step name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <input type="text" placeholder="Assigned approver or role" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                    </div>
+                                    <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
+                                </li>
+                                <li class="chain-step-item">
+                                    <div class="chain-step-num">3</div>
+                                    <div class="chain-step-info">
+                                        <input type="text" value="Commercial Review" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <input type="text" value="Commercial Lead" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                    </div>
+                                    <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
+                                </li>
+                                <li class="chain-step-item">
+                                    <div class="chain-step-num">4</div>
+                                    <div class="chain-step-info">
+                                        <input type="text" value="Finance Sign-off" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <input type="text" value="Finance Director" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                    </div>
+                                    <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
+                                </li>
+                                <li class="chain-step-item">
+                                    <div class="chain-step-num">5</div>
+                                    <div class="chain-step-info">
+                                        <input type="text" value="Executive Approval" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">
+                                        <input type="text" value="Chief Executive / CFO" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">
+                                    </div>
+                                    <button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step">&#10005;</button>
+                                </li>
+                            </ol>
+
+                            <button type="button" class="secondary-action" style="margin-top:16px;width:100%" onclick="addChainStep()">+ Add approval step</button>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- ── Existing templates ────────────────────────────────────── -->
+            <section class="surface-panel" style="margin-bottom:22px">
+                <div class="table-panel" style="border-bottom:1px solid var(--brand-border)">
+                    <div class="table-panel-header">
+                        <div>
+                            <h2>Existing templates</h2>
+                            <p>Edit, archive, or reconfigure the approval chain for any template. Changes to an approval chain apply to new submissions only.</p>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <button type="button" class="filter-chip is-selected">All</button>
+                            <button type="button" class="filter-chip">Active</button>
+                            <button type="button" class="filter-chip">Draft</button>
+                            <button type="button" class="filter-chip">Archived</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Tender Waiver Justification
+                            <span class="status-pill template-status-active" style="font-size:11px;vertical-align:middle;margin-left:8px">Active</span>
+                        </h3>
+                        <p>Use when a formal tender route is being waived and the business case needs justification. Covers values up to the FTS threshold of £138,760 incl. VAT.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Tender</span>
+                            <span class="template-tag">5 approval steps</span>
+                            <span class="template-tag">Policy CP105</span>
+                            <span class="template-tag">Last edited 12 Dec 2023</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="formAdmin.html">Edit</a>
+                        <a class="danger-action" href="#">Archive</a>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Tender Waiver Recommendation
+                            <span class="status-pill template-status-active" style="font-size:11px;vertical-align:middle;margin-left:8px">Active</span>
+                        </h3>
+                        <p>Used at the recommendation stage once the initial waiver rationale has been reviewed by the procurement team and needs onward sign-off.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Tender</span>
+                            <span class="template-tag">4 approval steps</span>
+                            <span class="template-tag">Policy CP105</span>
+                            <span class="template-tag">Last edited 05 Nov 2023</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="formAdmin.html">Edit</a>
+                        <a class="danger-action" href="#">Archive</a>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Quotation Waiver Justification
+                            <span class="status-pill template-status-active" style="font-size:11px;vertical-align:middle;margin-left:8px">Active</span>
+                        </h3>
+                        <p>Use when a quotation process is being waived and procurement needs the full background, market context, and supplier rationale.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Quotation</span>
+                            <span class="template-tag">5 approval steps</span>
+                            <span class="template-tag">Policy CP105</span>
+                            <span class="template-tag">Last edited 02 Oct 2023</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="formAdmin.html">Edit</a>
+                        <a class="danger-action" href="#">Archive</a>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Quotation Waiver Recommendation
+                            <span class="status-pill template-status-active" style="font-size:11px;vertical-align:middle;margin-left:8px">Active</span>
+                        </h3>
+                        <p>For the recommendation step when an exception needs onward approval and tracking after the initial quotation waiver justification is accepted.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Quotation</span>
+                            <span class="template-tag">3 approval steps</span>
+                            <span class="template-tag">Policy CP105</span>
+                            <span class="template-tag">Last edited 18 Sep 2023</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="formAdmin.html">Edit</a>
+                        <a class="danger-action" href="#">Archive</a>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Emergency Procurement Waiver
+                            <span class="status-pill template-status-draft" style="font-size:11px;vertical-align:middle;margin-left:8px">Draft</span>
+                        </h3>
+                        <p>Draft template for emergency procurement situations where standard tendering timelines cannot be met due to clinical urgency. Not yet published.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Tender</span>
+                            <span class="template-tag">2 approval steps (draft)</span>
+                            <span class="template-tag">Policy CP105</span>
+                            <span class="template-tag">Last edited 03 Jan 2024</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="formAdmin.html">Edit</a>
+                        <a class="danger-action" href="#">Discard draft</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Archived templates ────────────────────────────────────── -->
+            <section class="surface-panel">
+                <div class="table-panel" style="border-bottom:1px solid var(--brand-border)">
+                    <h2 style="margin:0 0 4px">Archived templates</h2>
+                    <p style="margin:0;color:var(--brand-text-muted)">These templates are no longer available for new submissions but are retained for audit purposes.</p>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>SFI &mdash; Legacy Tender Waiver (pre-2022)
+                            <span class="status-pill template-status-archived" style="font-size:11px;vertical-align:middle;margin-left:8px">Archived</span>
+                        </h3>
+                        <p>Superseded by the current Tender Waiver Justification template. Retained for reference against historical submissions.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Tender</span>
+                            <span class="template-tag">Archived Jan 2022</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="#">Restore</a>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-card-body">
+                        <h3>Interim COVID Procurement Waiver
+                            <span class="status-pill template-status-archived" style="font-size:11px;vertical-align:middle;margin-left:8px">Archived</span>
+                        </h3>
+                        <p>Temporary waiver form used during pandemic procurement. Closed March 2023.</p>
+                        <div class="template-meta">
+                            <span class="template-tag">Other</span>
+                            <span class="template-tag">Archived Mar 2023</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <a class="secondary-action" href="#">Restore</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Add a new editable chain step
+        function addChainStep() {
+            var list = document.getElementById('chain-list');
+            var items = list.querySelectorAll('.chain-step-item');
+            var nextNum = items.length + 1;
+
+            var li = document.createElement('li');
+            li.className = 'chain-step-item';
+            li.innerHTML =
+                '<div class="chain-step-num">' + nextNum + '</div>' +
+                '<div class="chain-step-info">' +
+                  '<input type="text" placeholder="Step name" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:6px">' +
+                  '<input type="text" placeholder="Assigned approver or role" style="width:100%;min-height:36px;padding:6px 10px;border:1px solid var(--brand-border);border-radius:8px;font-family:inherit;font-size:13px">' +
+                '</div>' +
+                '<button type="button" class="danger-action" style="min-height:36px;padding:0 12px;font-size:12px" aria-label="Remove step" onclick="removeChainStep(this)">&#10005;</button>';
+
+            list.appendChild(li);
+            renumberChain();
+        }
+
+        function removeChainStep(btn) {
+            btn.closest('.chain-step-item').remove();
+            renumberChain();
+        }
+
+        function renumberChain() {
+            var items = document.querySelectorAll('#chain-list .chain-step-item');
+            items.forEach(function(item, i) {
+                var num = item.querySelector('.chain-step-num');
+                if (num && num.textContent !== '&#10003;' && !num.innerHTML.includes('&#10003;')) {
+                    num.textContent = i + 1;
+                }
+            });
+        }
+
+        // Wire up existing remove buttons
+        document.querySelectorAll('#chain-list .danger-action').forEach(function(btn) {
+            btn.addEventListener('click', function() { removeChainStep(this); });
+        });
+
+        // Filter chip toggle (visual only)
+        document.querySelectorAll('.filter-chip').forEach(function(chip) {
+            chip.addEventListener('click', function() {
+                var group = this.closest('div');
+                group.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('is-selected'); });
+                this.classList.add('is-selected');
+            });
+        });
+    </script>
+</body>
+</html>

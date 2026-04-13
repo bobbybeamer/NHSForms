@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Concise Forms Management</title>
+  <meta name="description" content="Concise Forms Management portal home page">
+  <meta name="author" content="BBallester">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="home-page">
+  <div class="home-shell">
+    <header class="home-header">
+      <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+        <img src="files/NHS.jpeg" alt="NHS logo">
+      </a>
+      <nav class="home-nav" aria-label="Primary navigation">
+        <a class="is-active" href="index.html">Home</a>
+        <a href="formsList.html">Form List</a>
+        <a href="approvalList.html">Approval List</a>
+        <a href="forms.html">Forms</a>
+        <a href="users.html">Users</a>
+      </nav>
+      <a class="home-logout" href="Login.html">Log Out</a>
+    </header>
+
+    <main>
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Operations workspace</p>
+          <h1>Manage form submissions, approvals, and user access from one place.</h1>
+          <p class="hero-text">
+            This landing page gives staff a quick path into active forms, pending approvals, and user administration without digging through multiple screens.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-action" href="formsList.html">Open Form List</a>
+            <a class="secondary-action" href="approvalList.html">Review Approvals</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-badge">Daily workflow</div>
+          <img src="files/Fotolia_5396225_Subscription_L.jpg" alt="Office workspace">
+        </div>
+      </section>
+
+      <section class="home-grid" aria-label="Portal shortcuts">
+        <article class="portal-card accent-forms">
+          <span class="card-kicker">Forms</span>
+          <h2>Create and manage active form templates.</h2>
+          <p>Go straight to the forms catalogue to review available documents and start new submissions.</p>
+          <a href="forms.html">Open forms</a>
+        </article>
+
+        <article class="portal-card accent-approvals">
+          <span class="card-kicker">Approvals</span>
+          <h2>Track outstanding approvals before they bottleneck work.</h2>
+          <p>Use the approval list to identify pending decisions and keep requests moving.</p>
+          <a href="approvalList.html">View approval list</a>
+        </article>
+
+        <article class="portal-card accent-users">
+          <span class="card-kicker">Users</span>
+          <h2>Keep access and responsibilities up to date.</h2>
+          <p>Open the user directory to review account coverage, access, and ownership.</p>
+          <a href="users.html">Manage users</a>
+        </article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

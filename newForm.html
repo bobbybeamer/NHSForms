@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Form | Concise Forms Management</title>
+    <meta name="description" content="Create a new form request">
+    <meta name="author" content="BBallester">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="app-page">
+    <div class="app-shell">
+        <header class="home-header">
+            <a class="brand-mark" href="index.html" aria-label="Concise Forms Management home">
+                <img src="files/NHS.jpeg" alt="NHS logo">
+            </a>
+            <nav class="home-nav" aria-label="Primary navigation">
+                <a href="index.html">Home</a>
+                <a href="formsList.html">Form List</a>
+                <a href="approvalList.html">Approval List</a>
+                <a class="is-active" href="forms.html">Forms</a>
+                <a href="users.html">Users</a>
+            </nav>
+            <a class="home-logout" href="Login.html">Log Out</a>
+        </header>
+
+        <main>
+            <section class="page-hero page-hero-forms">
+                <div>
+                    <p class="eyebrow">New request</p>
+                    <h1>Start a waiver request with the core information in one place.</h1>
+                    <p class="hero-text">This page gives requesters a clean starting point before handing off to the detailed standing financial instruction forms.</p>
+                </div>
+                <div class="hero-actions">
+                    <a class="secondary-action" href="forms.html">Back to templates</a>
+                </div>
+            </section>
+
+            <section class="surface-panel form-workspace">
+                <div class="table-panel-header">
+                    <div>
+                        <h2>Request summary</h2>
+                        <p>Capture the key details now, then continue into the relevant template.</p>
+                    </div>
+                </div>
+
+                <form class="request-form">
+                    <div class="form-field">
+                        <label for="request-title">Request title</label>
+                        <input id="request-title" name="request-title" type="text" placeholder="Example: Cardiology imaging support waiver">
+                    </div>
+
+                    <div class="form-grid-two">
+                        <div class="form-field">
+                            <label for="form-type">Form type</label>
+                            <select id="form-type" name="form-type">
+                                <option>Tender Waiver Justification</option>
+                                <option>Tender Waiver Recommendation</option>
+                                <option>Quotation Waiver Justification</option>
+                                <option>Quotation Waiver Recommendation</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="request-date">Requested date</label>
+                            <input id="request-date" name="request-date" type="date">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-two">
+                        <div class="form-field">
+                            <label for="requester">Requester</label>
+                            <input id="requester" name="requester" type="text" placeholder="Enter requester name">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="department">Department</label>
+                            <input id="department" name="department" type="text" placeholder="Enter department">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-two">
+                        <div class="form-field">
+                            <label for="estimated-value">Estimated value</label>
+                            <input id="estimated-value" name="estimated-value" type="text" placeholder="Enter value excluding VAT">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="supplier">Proposed supplier</label>
+                            <input id="supplier" name="supplier" type="text" placeholder="Enter supplier name">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="summary">Business summary</label>
+                        <textarea id="summary" name="summary" rows="5" placeholder="Describe the need, urgency, and procurement context."></textarea>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="justification">Initial justification</label>
+                        <textarea id="justification" name="justification" rows="7" placeholder="Explain why the waiver is being requested and what evidence supports it."></textarea>
+                    </div>
+
+                    <div class="form-actions-row">
+                        <a class="primary-action" href="SFI - Tender Waiver Justification.html">Continue to detailed form</a>
+                        <a class="secondary-action" href="formsList.html">Save as draft</a>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
