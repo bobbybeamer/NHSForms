@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// SQLite does not support native enums — roles/statuses are stored as plain strings.
+// TypeScript enums are defined in src/types/enums.ts for type safety.
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  role        String
+  trust       String
+  submissions Submission[]
+  decisions   ApprovalStep[] @relation("DecidedBy")
+  auditEvents AuditEvent[]
+}
+
+model FormType {
+  key     String @id
+  name    String
+  version String
+}
+
+model Submission {
+  id               String    @id @default(cuid())
+  formTypeKey      String
+  requesterId      String
+  requester        User      @relation(fields: [requesterId], references: [id])
+  trust            String
+  status           String    @default("DRAFT")
+  totalValueIncVat Float     @default(0)
+  fieldValues      String    @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  approvalSteps    ApprovalStep[]
+  auditEvents      AuditEvent[]
+}
+
+model ApprovalStep {
+  id           String    @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  sequence     Int
+  approverRole String
+  status       String    @default("PENDING")
+  decisionNote String?
+  decidedById  String?
+  decidedBy    User?     @relation("DecidedBy", fields: [decidedById], references: [id])
+  decidedAt    DateTime?
+}
+
+model AuditEvent {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  actorId      String
+  actor        User       @relation(fields: [actorId], references: [id])
+  action       String
+  detail       String
+  createdAt    DateTime   @default(now())
+}
