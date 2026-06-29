@@ -1,0 +1,129 @@
+NHS Procurement Forms Platform — User Guide (draft v0.1)
+
+Change log
+2026-06-29 (Build 4) — Added email generation (approval notification and MERG SOP templates). New section 13 "Emails and notifications". Updated section 11 "not yet built". Added SHYPS and URN requested fields to MERG form. Recipient logic for MERG concluded/completed emails implemented per SOP documents; confirm named addresses with client.
+2026-06-29 (Builds 1–3 reconciliation) — Corrected admin screen capabilities (only the three seeded thresholds are editable via /admin; approval chain editing, care-group mapping, and user management are not yet built). Corrected access control description (no role restriction on /admin in this prototype). Removed claim that admin changes are audited (not implemented). Noted that the £500,000 and £2,500,000 waiver band boundaries are hardcoded in config, not editable via the Admin screen. Updated section 11 "not yet built" list. Removed in-progress verification note from section 6 in-flight protection paragraph (snapshot isolation verified).
+
+1. What this system is
+This is a web application for managing NHS procurement approval forms. It replaces the current way of working — forms written in Word and emailed around the organisation — where requests often travel in the wrong order or jump straight to the ultimate approver (the CFO), skipping people who are supposed to sign off first.
+Instead, the system does three things that the Word-and-email process can't:
+It enforces the correct approval order based on the value of the request, so no step can be skipped. It keeps a complete audit trail of every action — who did what, when, and why. And it holds the approval rules in editable configuration, so the procurement team can keep the thresholds and approvers up to date themselves without changing the software.
+It currently supports two forms: the SFI Waiver (a request to waive Standing Financial Instructions, used across all three trusts) and the MERG Equipment Request (the Medical Equipment Resource Group request used by York & Scarborough). More forms can be added to the same engine later.
+2. Key concepts
+A few terms are used throughout the system:
+
+Form type — a kind of form the system supports. Today there are two: SFI Waiver and MERG Equipment Request.
+Submission — one filled-in instance of a form (one actual request making its way through approval).
+Approval chain — the ordered list of people who must approve a submission, worked out automatically from the form type, the trust, and the value of the request.
+Role — what a person can do in the system (raise requests, approve at a certain stage, or administer the rules).
+Trust — one of the three organisations: York & Scarborough, HUTH, or NLAG.
+Threshold — a value figure that changes how a request is routed (for example, the procurement threshold above which different rules apply).
+Audit trail — the permanent record of every action taken on a submission.
+
+3. Logging in
+The system opens on a login screen. This is a prototype login only — you choose who you are from a list of demo users, and there are no passwords. It exists so the workflow can be demonstrated; it is not secure and is not how the finished system would handle sign-in. A production version would connect to NHS single sign-on, so that people log in with their existing NHS credentials. A banner on the screen makes this prototype status clear.
+Once you pick a user, the system treats you as that person, with their role and trust, until you log out and pick someone else. This makes it easy to walk through a whole request — submit as a requester, then log back in as each approver in turn — during a demo.
+4. Roles — who does what
+The system recognises the following roles. A person has one role, which controls what they see and can do:
+
+Requester — raises new requests and responds when more information is asked for.
+Procurement Business Partner — first approval step on a waiver.
+Finance — finance review step on a waiver.
+Finance Manager — first approval step on a MERG request, assigned automatically by care group.
+Divisional Lead — second approval step on a MERG request.
+MERG Committee — committee approval step on a MERG request.
+Director of Procurement — final authoriser for lower-value waivers.
+Chief Financial Officer (CFO) — final authoriser for higher-value waivers.
+Executive Committee — authoriser for high-value requests (and the business-case step on larger MERG requests).
+Trust Board — authoriser for the highest-value requests.
+Administrator — maintains the system's rules (thresholds, approval chains, care-group mappings, and users). Does not normally raise or approve requests. Note: in this prototype there is no separate Administrator role enforced by the system — the /admin screen is reachable by any logged-in user. Role-based access control on that screen is a later-build item.
+
+5. For requesters — raising a request
+From the dashboard, choose Start a form and pick the form you need. Both form types appear here, each clearly labelled. You can save a draft at any point and come back later, or submit for approval once the form is complete. Your own requests appear in My requests, where you can see each one's status and which stage it has reached.
+The SFI Waiver form
+A single-page form used when you need to waive the trust's Standing Financial Instructions (the normal competitive quotation or tender process). You complete:
+
+Request details — trust, department, division, source of funding, a description of the goods or services, the purchase value (excluding VAT), the VAT, the total value (calculated for you, including VAT), the proposed supplier, the contract period, and whether there is any conflict of interest.
+Justification reason — you select the one policy basis that applies: Chief Executive Directive, Continuity of Service, Legal Advice, Nationally Funded Programme, Only Supplier, Standardisation, Urgent Requirement, or Prototype/Research.
+A short explanation (up to 50 words) of how the waiver meets that circumstance.
+
+As you enter the total value, the system works out who will need to approve it (see section 6) and shows a warning if the value is above the procurement threshold, where a simple waiver may no longer be appropriate.
+The MERG Equipment Request
+A multi-step wizard for requests to buy or replace medical/capital equipment, used by York & Scarborough. You move through the steps using the side navigation, and each step is checked before you continue. The steps are:
+
+Conflict of interest — declare any, with detail if needed.
+Requester and approvers — your name, role, contact details, department, site, and the care group (1–6), which determines your finance manager.
+Environment, sustainability and social value — whether you've considered each, with a short explanation.
+Equipment details — proposed supplier, model, quantity, product link, item code, whether it's on your local replacement plan, where the current and new equipment are used, a description, why it's needed, and whether installation or minor works are required. Some fields appear only when relevant — for example, choosing "replacing existing" reveals fields for the old equipment, and "capital scheme" reveals capital-scheme fields.
+Case of need and patient risk — the clinical case, the risk if it's not approved, whether a Datix has been raised, and whether NICE guidance applies.
+Additional risk checks — IT/network connection, patient-identifiable data (which prompts DTAC and DPIA confirmations), imaging, PACS, training, and the maintenance approach. The form builds an attachments checklist from your answers, telling you which supporting documents your request will need.
+Legal procurement — you're asked to name at least three suppliers (or speak to Procurement if you can only name one) and whether any procurement process has already happened.
+Financial — anticipated life of the equipment, capital cost (ex VAT), annual maintenance, consumables, an automatically calculated total, and the funding source (with extra fields if it's charity-funded).
+Review and submit — a summary of everything before you submit.
+
+As with the waiver, the value you enter drives both the routing and a set of on-screen flags (see section 6).
+6. How approval routing works (the heart of the system)
+When a request is submitted, the system calculates the approval chain automatically and then enforces it in order. Each approver can only act when it is genuinely their turn — the step before them must be approved first. It is not possible to skip a step or jump ahead to the CFO or the board. This is the behaviour that prevents the "wrong order / straight to the CFO" problem the system was built to solve.
+Waiver chain. Every waiver goes: Procurement Business Partner → Finance → a final authoriser that depends on the total value (including VAT):
+
+Below the procurement threshold (currently £135,018) → Director of Procurement
+From the threshold up to £500,000 → Chief Financial Officer
+From £500,000 up to £2,500,000 → Executive Committee
+Above £2,500,000 → Trust Board
+
+So a £40,000 waiver ends with the Director of Procurement; a £600,000 waiver ends with the Executive Committee — and the earlier steps still happen first either way.
+MERG chain. Every MERG request goes: Finance Manager (the one mapped to the chosen care group) → Divisional Lead → MERG Committee. If the total exceeds £50,000, an Executive Committee step is added at the end, because a business case is required at that level.
+On-screen flags. Alongside the routing, the forms show warnings when certain conditions are met. On a MERG request: over £50,000 prompts the business-case/Executive-Committee message; a direct award off-framework at £25,000 or more prompts that a Single Tender Action — an SFI Waiver — needs to be raised alongside it, with a link to start one; and a value above the procurement threshold prompts that the formal procurement route applies. On a waiver, a value above the threshold prompts the warning described above.
+In-flight protection. When a request is submitted, its approval chain is fixed for that request. If an administrator later changes a threshold, requests that are already part-way through approval keep the chain they started with — only new requests use the new rules. This protects live approvals from shifting underneath the people working on them. Technically: the ApprovalStep rows are written once at submission time and are never recomputed from the live configuration.
+7. For approvers — reviewing a request
+Anything waiting on you appears in Approvals waiting on me. Opening a request shows all its details, the full approval chain with each step's status, and the audit trail so far. You have three actions, each of which lets you add a note:
+
+Approve and advance — moves the request to the next person in the chain (or completes it, if you're the last approver).
+Request more information — sends the request back to the requester to add detail; it returns to you once they've responded.
+Reject — closes the request.
+
+Whatever you choose, your action and your note are recorded permanently in the audit trail.
+8. The audit trail
+Every submission carries a complete, time-stamped history: when it was submitted, every approval, every request for more information, every response from the requester, and every rejection — each with the person's name and any note they added. This is what gives the system its accountability, and it's the part an NHS governance or audit team will care about most.
+9. For administrators — maintaining the rules
+The Admin area (/admin) is reachable by any logged-in user in this prototype — a warning banner on the screen makes that clear. In production it would be restricted to nominated administrators. It's what makes the system maintainable by Edd's team rather than by a developer.
+
+Currently built in the Admin area:
+
+Thresholds — view and edit the three value figures stored in the database: the PA23 procurement threshold (seeded at £135,018 inc VAT), the MERG business-case trigger (seeded at £50,000 ex VAT), and the MERG Single Tender Action trigger (seeded at £25,000 ex VAT). Editing one of these changes how new requests are routed immediately. The £500,000 and £2,500,000 waiver band boundaries are not stored in the database — they are set in src/config/waiverRouting.ts and are not editable via this screen.
+
+Not yet built in the Admin area (candidates for later builds):
+Approval chains — edit which roles sit at which steps, or reorder, add, or remove steps.
+Care-group mapping — set which Finance Manager email each care group (1–6) routes to. Currently hardcoded in src/config/careGroups.ts.
+Users and roles — view users, change a person's role or trust, and add demo users.
+Admin audit trail — record which threshold was changed, from what value to what value, and by whom. Currently threshold changes are saved to the database with no separate audit entry.
+
+One thing is deliberately built into this area: as described in section 6, admin changes only affect new requests; anything already in flight is protected.
+This is the single feature that proves the central pitch: when a threshold changes (for example, the procurement threshold moving every two years), one edit here updates the routing for every affected form, with no software change.
+10. Thresholds and policy notes
+The current procurement threshold is set to £135,018 including VAT, the figure that applied from January 2026 under the Procurement Act 2023. This replaced the older £138,760 figure still printed on the source Word forms, and it's revised roughly every two years — which is exactly why it lives in editable configuration.
+A few points are deliberately left for Edd and the procurement team to confirm, and the system flags rather than silently decides them:
+
+Whether waivers above the procurement threshold are permitted at all. The source documents are inconsistent — the form lists authorisers up to Trust Board, but a reviewer note states spend above the threshold cannot be waived and a non-compliant route should not be advertised. Under the Procurement Act, above-threshold direct awards are possible only via a heavier route (a transparency notice and a mandatory standstill period). For now the system warns on over-threshold requests rather than blocking them; the precise policy is Edd's to set.
+Which value each MERG trigger compares against — total project value vs. capital only, and including vs. excluding VAT. These are currently set to a sensible interpretation and clearly commented, but they should be confirmed.
+
+11. What's not yet built (prototype limitations)
+So expectations are clear when demonstrating: the system does not yet have real, secure login (it uses the demo role-switcher); it does not yet send emails automatically (it generates and previews them — see section 13 — but sending requires a later, production-only build); it does not yet allow file uploads (the attachments checklist tells you what's needed, but documents aren't attached in the system); it does not generate PDFs; it covers the York & Scarborough MERG process but not yet the differing HUTH and NLAG variants; it does not yet handle the lease/RTT form itself; the Admin screen has no role-based access control (any logged-in user can reach /admin); the Admin screen does not yet support editing approval chains, care-group-to-FM mappings, or users and roles; and admin threshold changes are not yet written to the audit trail. The named email recipients and team inboxes in the email templates are placeholders derived from the SOP documents — all must be confirmed with the client before any email is sent. These are all candidates for later builds.
+12. Running the application (technical note)
+For whoever runs the system on a computer: it's a Next.js application using a local database. After installing dependencies and applying the database setup, it runs locally in a web browser. The README in the project folder has the exact commands. This is a development/demo setup — production hosting inside the NHS's approved environment is a separate, later step.
+13. Emails and notifications
+The system generates and previews emails but does not send them. Sending email (via SMTP or an NHS mail relay) is a production-only feature for a later build. Every email generated is recorded in the audit trail.
+
+On a submission's detail page, two kinds of email can be generated.
+
+Approval notification email. When a submission has an active approval step, this produces the email that would normally be sent by hand to notify the current approver that the request is waiting for them. The To address is computed from the currently active step only — it is architecturally impossible to generate this email addressed to a later-step approver while an earlier step is still pending. This is the digital enforcement of the correct approval order. Cc is the MERG Applications inbox (for MERG requests) or the Procurement Business Partner (for Waivers). Once the email is generated, an "Open in email client" button builds a mailto link with To, Cc, Subject, and Body pre-filled, and opens it in the user's mail application.
+
+MERG SOP emails (MERG requests only). Three additional templates are available, matching the trust's standard operating procedures. Each is selectable from a dropdown and produces a preview before the mailto link is offered.
+
+Request for Quote (to supplier) — addressed to the proposed supplier named on the form, with the MERG Applications inbox in Cc. The body is the standard quote-request checklist from the supplier SOP, including a request for itemised costs, lead times, warranty terms, and NHS Supply Chain framework details. Replies are directed to the MERG Applications inbox.
+Application Concluded — Purchasing — the standard email sent when a MERG purchasing application is approved and the purchase order can be raised. Recipients (To) are computed automatically: the requester, the Finance Manager for the chosen care group, the Care Group Manager, Alastair Jakeman, the Medical Engineering inbox, and Stores inboxes matched to the site. Conditional additions: the Charity Finance inbox (if funding source is Charity); NHS Supply Chain (if a URN was requested); and Medical Engineering maintenance personnel (David Steel, James Howes, Caroline Fisher, and EME Admin) if the maintenance route is Medical Engineering and the equipment is not for SHYPS. For SHYPS equipment, the SHYPS team (Luke Poskitt, Gareth Williams, Helen Greenley, Karen Awty, and Matt Coulson for the maintenance element) replace the standard Medical Engineering names. Steve Bennison, Ed Pearson, and the MERG Applications inbox are always in Cc.
+Application Completed — Leasing — the same recipient logic as purchasing, but the body references the RTT lease route and includes a placeholder for the lease document reference. The maintenance-dependent recipients for leasing are Daniel Webb and David Steel (rather than Caroline Fisher and James Howes).
+
+New MERG form fields (Build 4). Two fields added to the MERG form drive the above recipient rules: "Is this equipment for SHYPS?" (step 3, Requester Details) and "Has a URN been requested from NHS Supply Chain?" (step 8, Legal and Procurement). Both default to blank; when answered, they are stored with the submission and used when generating emails.
+
+Open questions (confirm with client). The named individuals and team inbox addresses in the recipient config are derived from the SOP documents; all should be confirmed before any email is sent. The care-group-to-Care-Group-Manager mapping uses placeholder email addresses. The purchasing and leasing SOP documents list slightly different FM/CGM assignments for some care groups — the current config uses the purchasing table; the discrepancy should be resolved. SHYPS is treated as a flag on the equipment request; confirm the precise definition (which units or locations qualify) with the procurement team.
