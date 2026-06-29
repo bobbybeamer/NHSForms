@@ -13,11 +13,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'User not found' }, { status: 401 });
   }
 
-  // Find all submissions where there's an ACTIVE step matching this user's role
+  // Find steps where:
+  // (a) approverRole matches user's role AND assignedToId is null (standard role-based routing), OR
+  // (b) assignedToId matches this user's id (care-group-specific Finance Manager routing)
   const activeSteps = await prisma.approvalStep.findMany({
     where: {
-      approverRole: user.role,
       status: ApprovalStepStatus.ACTIVE,
+      OR: [
+        { approverRole: user.role, assignedToId: null },
+        { assignedToId: userId },
+      ],
     },
     include: {
       submission: {

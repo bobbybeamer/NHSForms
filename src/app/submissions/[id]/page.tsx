@@ -83,6 +83,9 @@ function roleLabel(role: string): string {
     CFO: 'CFO',
     EXEC_COMMITTEE: 'Exec Committee',
     TRUST_BOARD: 'Trust Board',
+    FINANCE_MANAGER: 'Finance Manager',
+    DIVISIONAL_LEAD: 'Divisional Lead',
+    MERG_COMMITTEE: 'MERG Committee',
   };
   return labels[role] ?? role;
 }
@@ -107,6 +110,15 @@ function justificationLabel(val: string): string {
     f: 'f – Standardisation',
     g: 'g – Urgent Requirement',
     h: 'h – Prototype / Research',
+  };
+  return map[val] ?? val;
+}
+
+function whyLabel(val: string): string {
+  const map: Record<string, string> = {
+    replacement: 'Replacement of existing equipment',
+    new: 'New / additional equipment',
+    capital: 'Capital scheme linked',
   };
   return map[val] ?? val;
 }
@@ -202,6 +214,8 @@ export default function SubmissionDetailPage() {
   })();
 
   const ref = submission.id.slice(-8).toUpperCase();
+  const isMerg = submission.formTypeKey === 'merg_equipment';
+  const formTypeName = isMerg ? 'MERG Equipment Request' : 'SFI Waiver';
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -210,19 +224,23 @@ export default function SubmissionDetailPage() {
         <span className="mx-2">/</span>
         <Link href="/my-requests" className="hover:underline text-[#005EB8]">My Requests</Link>
         <span className="mx-2">/</span>
-        <span>SFI Waiver {ref}</span>
+        <span>{formTypeName} {ref}</span>
       </nav>
 
       {/* Header */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm text-gray-500 font-mono mb-1">SFI Waiver · Ref: {ref}</p>
+            <p className="text-sm text-gray-500 font-mono mb-1">
+              {formTypeName} &middot; Ref: {ref}
+            </p>
             <h1 className="text-xl font-bold text-gray-900">
-              {fields.descriptionOfGoodsServices ?? 'Waiver Request'}
+              {isMerg
+                ? (fields.desc ?? fields.model ?? 'MERG Equipment Request')
+                : (fields.descriptionOfGoodsServices ?? 'Waiver Request')}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              {submission.trust} · Submitted {new Date(submission.createdAt).toLocaleDateString('en-GB')}
+              {submission.trust} &middot; Submitted {new Date(submission.createdAt).toLocaleDateString('en-GB')}
             </p>
           </div>
           <span className={`inline-block text-sm font-semibold px-3 py-1.5 rounded-full ${STATUS_BADGE[submission.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -233,26 +251,74 @@ export default function SubmissionDetailPage() {
 
       {/* Field values */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h2 className="font-semibold text-gray-900 mb-4">Waiver details</h2>
+        <h2 className="font-semibold text-gray-900 mb-4">
+          {isMerg ? 'Equipment request details' : 'Waiver details'}
+        </h2>
         <dl>
-          <FieldRow label="Trust" value={fields.trust} />
-          <FieldRow label="Department" value={fields.department} />
-          <FieldRow label="Division" value={fields.division} />
-          <FieldRow label="Source of funding" value={fields.sourceOfFunding} />
-          <FieldRow label="Description" value={fields.descriptionOfGoodsServices} />
-          <FieldRow label="Proposed supplier" value={fields.proposedSupplier} />
-          <FieldRow label="Contract period" value={fields.contractPeriod} />
-          <FieldRow label="Purchase value ex VAT" value={fields.purchaseValueExVat != null ? formatGBP(fields.purchaseValueExVat) : undefined} />
-          <FieldRow label="VAT" value={fields.vat != null ? formatGBP(fields.vat) : undefined} />
-          <FieldRow label="Total value inc VAT" value={formatGBP(submission.totalValueIncVat)} />
-          <FieldRow label="Conflict of interest" value={fields.conflictOfInterest} />
-          {fields.conflictOfInterest === 'Yes' && (
-            <FieldRow label="Conflict details" value={fields.conflictDetails} />
+          {isMerg ? (
+            /* ── MERG field summary ── */
+            <>
+              <FieldRow label="Care group" value={fields.careGroup ? `Care Group ${fields.careGroup}` : undefined} />
+              <FieldRow label="Department" value={fields.dept} />
+              <FieldRow label="Site" value={fields.site} />
+              <FieldRow label="Proposed supplier" value={fields.proposedSupplier} />
+              <FieldRow label="Model / product" value={fields.model} />
+              <FieldRow label="Quantity" value={fields.qty} />
+              <FieldRow label="Description" value={fields.desc} />
+              <FieldRow label="Why required" value={whyLabel(fields.why)} />
+              {fields.why === 'replacement' && (
+                <>
+                  <FieldRow label="Asset number (replaced)" value={fields.assetNo} />
+                  <FieldRow label="Approximate age" value={fields.approxAge} />
+                  <FieldRow label="Lease number" value={fields.leaseNo} />
+                </>
+              )}
+              {fields.why === 'capital' && (
+                <>
+                  <FieldRow label="Capital PM" value={fields.capPm} />
+                  <FieldRow label="Capital scheme" value={fields.capScheme} />
+                </>
+              )}
+              <FieldRow label="Capital cost ex VAT" value={fields.capitalCostExVat != null ? formatGBP(fields.capitalCostExVat) : undefined} />
+              <FieldRow label="Annual maintenance cost" value={fields.annualMaintCost != null ? formatGBP(fields.annualMaintCost) : undefined} />
+              <FieldRow label="Annual consumables cost" value={fields.consumablesCost != null ? formatGBP(fields.consumablesCost) : undefined} />
+              <FieldRow label="Anticipated life" value={fields.anticipatedLife} />
+              <FieldRow label="Total estimated project cost" value={formatGBP(submission.totalValueIncVat)} />
+              <FieldRow label="Funding source" value={fields.fundingSource} />
+              {fields.fundingSource === 'Charity' && (
+                <>
+                  <FieldRow label="Fund name" value={fields.fundName} />
+                  <FieldRow label="Fund number" value={fields.fundNo} />
+                </>
+              )}
+              <FieldRow label="Award route" value={fields.awardRoute === 'direct_award' ? 'Direct award (off-framework)' : 'Framework agreement'} />
+              <FieldRow label="Conflict of interest" value={fields.coi} />
+              {fields.coi === 'Yes' && <FieldRow label="COI details" value={fields.coiDetails} />}
+              <FieldRow label="Requester" value={submission.requester?.name} />
+            </>
+          ) : (
+            /* ── Waiver field summary ── */
+            <>
+              <FieldRow label="Trust" value={fields.trust} />
+              <FieldRow label="Department" value={fields.department} />
+              <FieldRow label="Division" value={fields.division} />
+              <FieldRow label="Source of funding" value={fields.sourceOfFunding} />
+              <FieldRow label="Description" value={fields.descriptionOfGoodsServices} />
+              <FieldRow label="Proposed supplier" value={fields.proposedSupplier} />
+              <FieldRow label="Contract period" value={fields.contractPeriod} />
+              <FieldRow label="Purchase value ex VAT" value={fields.purchaseValueExVat != null ? formatGBP(fields.purchaseValueExVat) : undefined} />
+              <FieldRow label="VAT" value={fields.vat != null ? formatGBP(fields.vat) : undefined} />
+              <FieldRow label="Total value inc VAT" value={formatGBP(submission.totalValueIncVat)} />
+              <FieldRow label="Conflict of interest" value={fields.conflictOfInterest} />
+              {fields.conflictOfInterest === 'Yes' && (
+                <FieldRow label="Conflict details" value={fields.conflictDetails} />
+              )}
+              <FieldRow label="Justification reason" value={justificationLabel(fields.justificationReason)} />
+              <FieldRow label="How waiver meets circumstances" value={fields.waiverCircumstances} />
+              <FieldRow label="Requester" value={submission.requester?.name} />
+              <FieldRow label="Date" value={fields.date ? new Date(fields.date).toLocaleDateString('en-GB') : undefined} />
+            </>
           )}
-          <FieldRow label="Justification reason" value={justificationLabel(fields.justificationReason)} />
-          <FieldRow label="How waiver meets circumstances" value={fields.waiverCircumstances} />
-          <FieldRow label="Requester" value={submission.requester?.name} />
-          <FieldRow label="Date" value={fields.date ? new Date(fields.date).toLocaleDateString('en-GB') : undefined} />
         </dl>
       </div>
 

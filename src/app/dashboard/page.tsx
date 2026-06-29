@@ -42,24 +42,51 @@ export default function DashboardPage() {
       <p className="text-gray-500 mb-8">Welcome, {user.name}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* New waiver */}
-        <Link
-          href="/waivers/new"
-          className="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md hover:border-[#005EB8] transition-all group"
-        >
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 text-white text-lg font-bold"
-            style={{ backgroundColor: '#005EB8' }}
-          >
-            +
-          </div>
-          <h2 className="font-semibold text-lg text-gray-900 group-hover:text-[#005EB8]">
-            New SFI Waiver
+        {/* Start a new request — section heading */}
+        <div className="md:col-span-2">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            Start a new request
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Start a new Standing Financial Instructions waiver request
-          </p>
-        </Link>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* SFI Waiver */}
+            <Link
+              href="/waivers/new"
+              className="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-[#005EB8] transition-all group"
+            >
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 text-white text-lg font-bold"
+                style={{ backgroundColor: '#005EB8' }}
+              >
+                W
+              </div>
+              <h3 className="font-semibold text-base text-gray-900 group-hover:text-[#005EB8]">
+                SFI Waiver
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Standing Financial Instructions waiver for direct award procurement
+              </p>
+            </Link>
+
+            {/* MERG Equipment Request */}
+            <Link
+              href="/merg/new"
+              className="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-[#005EB8] transition-all group"
+            >
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center mb-3 text-white text-lg font-bold"
+                style={{ backgroundColor: '#005EB8' }}
+              >
+                M
+              </div>
+              <h3 className="font-semibold text-base text-gray-900 group-hover:text-[#005EB8]">
+                MERG Equipment Request
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Medical Equipment Replacement Group request for new or replacement equipment
+              </p>
+            </Link>
+          </div>
+        </div>
 
         {/* My Requests */}
         <Link

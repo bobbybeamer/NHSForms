@@ -13,7 +13,7 @@ async function main() {
   await prisma.formType.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create form type
+  // Create form types
   const formType = await prisma.formType.create({
     data: {
       key: 'sfi_waiver',
@@ -23,7 +23,12 @@ async function main() {
   });
   console.log('Created FormType:', formType.key);
 
-  // Create demo users
+  const mergFormType = await prisma.formType.create({
+    data: { key: 'merg_equipment', name: 'MERG Equipment Request', version: '1.0' },
+  });
+  console.log('Created FormType:', mergFormType.key);
+
+  // Create demo users (original 7)
   const requester = await prisma.user.create({
     data: {
       name: 'Reqi Requester',
@@ -89,6 +94,15 @@ async function main() {
 
   console.log('Created 7 demo users');
 
+  // New MERG-related users
+  const fmCg1 = await prisma.user.create({ data: { name: 'Fatima Manager (CG1)', email: 'fm.cg1@nhs.net', role: Role.FINANCE_MANAGER, trust: 'York & Scarborough' } });
+  const fmCg2 = await prisma.user.create({ data: { name: 'Felix Manager (CG2)', email: 'fm.cg2@nhs.net', role: Role.FINANCE_MANAGER, trust: 'York & Scarborough' } });
+  const fmCg3 = await prisma.user.create({ data: { name: 'Frances Manager (CG3)', email: 'fm.cg3@nhs.net', role: Role.FINANCE_MANAGER, trust: 'York & Scarborough' } });
+  const divisionalLead = await prisma.user.create({ data: { name: 'Demi Divisional', email: 'demi.divisional@nhs.net', role: Role.DIVISIONAL_LEAD, trust: 'York & Scarborough' } });
+  const mergCommittee = await prisma.user.create({ data: { name: 'Marcus MERG', email: 'marcus.merg@nhs.net', role: Role.MERG_COMMITTEE, trust: 'York & Scarborough' } });
+
+  console.log('Created 5 MERG demo users');
+
   // ─── APPROVED waiver (£40,000 – goes to Director of Procurement) ────────
   const approvedWaiver = await prisma.submission.create({
     data: {
@@ -119,7 +133,7 @@ async function main() {
   });
 
   // Create all 3 approval steps for the APPROVED waiver, all APPROVED
-  const approvedStep1 = await prisma.approvalStep.create({
+  await prisma.approvalStep.create({
     data: {
       submissionId: approvedWaiver.id,
       sequence: 1,
@@ -131,7 +145,7 @@ async function main() {
     },
   });
 
-  const approvedStep2 = await prisma.approvalStep.create({
+  await prisma.approvalStep.create({
     data: {
       submissionId: approvedWaiver.id,
       sequence: 2,
@@ -143,7 +157,7 @@ async function main() {
     },
   });
 
-  const approvedStep3 = await prisma.approvalStep.create({
+  await prisma.approvalStep.create({
     data: {
       submissionId: approvedWaiver.id,
       sequence: 3,
@@ -266,7 +280,89 @@ async function main() {
   });
 
   console.log('Created IN_APPROVAL waiver:', inApprovalWaiver.id);
+
+  // ─── IN_APPROVAL MERG submission (care group 2, £30,000 total project cost) ─
+  // NOTE: totalValueIncVat stores the total project cost ex VAT (MERG has no
+  // separate VAT field; we store the total estimated project cost as-is).
+  const mergSubmission = await prisma.submission.create({
+    data: {
+      formTypeKey: 'merg_equipment',
+      requesterId: requester.id,
+      trust: 'York & Scarborough',
+      status: SubmissionStatus.IN_APPROVAL,
+      totalValueIncVat: 30000,
+      fieldValues: JSON.stringify({
+        careGroup: '2',
+        dept: 'Cardiology',
+        site: 'York Hospital',
+        proposedSupplier: 'Medtronic',
+        model: 'LINQ II Insertable Cardiac Monitor',
+        qty: '2',
+        desc: 'Subcutaneous cardiac monitoring device for long-term arrhythmia detection',
+        why: 'new',
+        capitalCostExVat: 25000,
+        annualMaintCost: 2500,
+        consumablesCost: 2500,
+        anticipatedLife: '5 years',
+        totalEstimatedCost: 30000,
+        fundingSource: 'MERG',
+        awardRoute: 'framework',
+      }),
+    },
+  });
+
+  // Step 1: FINANCE_MANAGER (ACTIVE, assigned to fmCg2)
+  await prisma.approvalStep.create({
+    data: {
+      submissionId: mergSubmission.id,
+      sequence: 1,
+      approverRole: Role.FINANCE_MANAGER,
+      status: ApprovalStepStatus.ACTIVE,
+      assignedToId: fmCg2.id,
+    },
+  });
+
+  // Step 2: DIVISIONAL_LEAD (PENDING)
+  await prisma.approvalStep.create({
+    data: {
+      submissionId: mergSubmission.id,
+      sequence: 2,
+      approverRole: Role.DIVISIONAL_LEAD,
+      status: ApprovalStepStatus.PENDING,
+    },
+  });
+
+  // Step 3: MERG_COMMITTEE (PENDING)
+  await prisma.approvalStep.create({
+    data: {
+      submissionId: mergSubmission.id,
+      sequence: 3,
+      approverRole: Role.MERG_COMMITTEE,
+      status: ApprovalStepStatus.PENDING,
+    },
+  });
+
+  await prisma.auditEvent.create({
+    data: {
+      submissionId: mergSubmission.id,
+      actorId: requester.id,
+      action: 'SUBMITTED',
+      detail: 'Submission created and submitted for approval. Total estimated cost: £30,000. Chain: Finance Manager → Divisional Lead → MERG Committee.',
+      createdAt: new Date('2026-06-28T10:00:00Z'),
+    },
+  });
+
+  console.log('Created IN_APPROVAL MERG submission:', mergSubmission.id);
   console.log('Seeding complete.');
+
+  // Suppress unused variable warnings
+  void fmCg1;
+  void fmCg3;
+  void cfo;
+  void exec;
+  void board;
+  void divisionalLead;
+  void mergCommittee;
 }
 
 main()

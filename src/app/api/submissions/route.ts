@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { computeApprovalChain } from '@/config/waiverRouting';
-import { SubmissionStatus, ApprovalStepStatus } from '@/types/enums';
+import { computeMergApprovalChain } from '@/config/mergRouting';
+import { CARE_GROUP_FM_EMAIL } from '@/config/careGroups';
+import { SubmissionStatus, ApprovalStepStatus, Role } from '@/types/enums';
 
 export async function GET(request: NextRequest) {
   const userId = request.cookies.get('nhs_user_id')?.value;
@@ -44,6 +46,14 @@ export async function POST(request: NextRequest) {
       ? SubmissionStatus.DRAFT
       : SubmissionStatus.IN_APPROVAL;
 
+    // Parse fieldValues so we can access individual fields for MERG routing
+    const parsedFields = typeof fieldValues === 'object' && fieldValues !== null
+      ? fieldValues
+      : (() => { try { return JSON.parse(fieldValues ?? '{}'); } catch { return {}; } })();
+
+    // NOTE: For MERG submissions, totalValueIncVat stores the total estimated
+    // project cost ex VAT (MERG has no separate VAT field; assumption — confirm
+    // with client whether VAT should be added separately).
     const submission = await prisma.submission.create({
       data: {
         formTypeKey,
@@ -56,15 +66,33 @@ export async function POST(request: NextRequest) {
     });
 
     if (!isDraft) {
-      const chain = computeApprovalChain(totalValueIncVat ?? 0);
+      let chain: string[];
+
+      if (formTypeKey === 'merg_equipment') {
+        // Use totalEstimatedCost from fieldValues for MERG routing
+        const totalCostExVat = parsedFields.totalEstimatedCost ?? 0;
+        chain = computeMergApprovalChain(totalCostExVat);
+      } else {
+        chain = computeApprovalChain(totalValueIncVat ?? 0);
+      }
 
       for (let i = 0; i < chain.length; i++) {
+        // For MERG step 1 (FINANCE_MANAGER), look up the specific FM by care group
+        let assignedToId: string | null = null;
+        if (formTypeKey === 'merg_equipment' && i === 0 && chain[0] === Role.FINANCE_MANAGER) {
+          const careGroup = parseInt(parsedFields.careGroup ?? '1', 10);
+          const fmEmail = CARE_GROUP_FM_EMAIL[careGroup] ?? CARE_GROUP_FM_EMAIL[1];
+          const fmUser = await prisma.user.findUnique({ where: { email: fmEmail } });
+          assignedToId = fmUser?.id ?? null;
+        }
+
         await prisma.approvalStep.create({
           data: {
             submissionId: submission.id,
             sequence: i + 1,
             approverRole: chain[i],
             status: i === 0 ? ApprovalStepStatus.ACTIVE : ApprovalStepStatus.PENDING,
+            ...(assignedToId ? { assignedToId } : {}),
           },
         });
       }

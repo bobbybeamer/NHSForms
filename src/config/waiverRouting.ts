@@ -1,9 +1,10 @@
 import { Role } from "@/types/enums";
+import { PA23_THRESHOLD_INC_VAT } from './thresholds';
 
 // ─── EDITABLE THRESHOLDS ────────────────────────────────────────────────────
 // £135,018 = PA23 goods/services threshold inc VAT, Jan 2026; revised every 2
 // years; confirm with procurement before changing this value.
-export const PA23_THRESHOLD = 135_018;
+export const PA23_THRESHOLD = PA23_THRESHOLD_INC_VAT;
 
 // Value bands that determine the final authoriser in the approval chain.
 // To change, edit the 'maxValue' for each band (use Infinity for the top band).

@@ -33,6 +33,18 @@ function formatGBP(value: number) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 }).format(value);
 }
 
+function formTypeLabel(key: string): { label: string; badge: string } {
+  if (key === 'merg_equipment') return { label: 'MERG', badge: 'bg-purple-100 text-purple-800' };
+  return { label: 'WAIVER', badge: 'bg-blue-100 text-blue-800' };
+}
+
+function descriptionForSubmission(formTypeKey: string, fields: Record<string, unknown>): string {
+  if (formTypeKey === 'merg_equipment') {
+    return (fields.desc as string) ?? (fields.model as string) ?? '—';
+  }
+  return (fields.descriptionOfGoodsServices as string) ?? '—';
+}
+
 export default function ApprovalsPage() {
   const { user, loading } = useUser();
   const router = useRouter();
@@ -86,6 +98,7 @@ export default function ApprovalsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Reference</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden sm:table-cell">Type</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden sm:table-cell">Trust</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Requester</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide hidden md:table-cell">Description</th>
@@ -101,11 +114,17 @@ export default function ApprovalsPage() {
                 })();
                 const ref = submission.id.slice(-8).toUpperCase();
                 const date = new Date(submission.createdAt).toLocaleDateString('en-GB');
-                const desc = fields.descriptionOfGoodsServices ?? '—';
+                const desc = descriptionForSubmission(submission.formTypeKey, fields);
+                const { label, badge } = formTypeLabel(submission.formTypeKey);
 
                 return (
                   <tr key={step.id} className="hover:bg-amber-50">
                     <td className="px-4 py-3 text-sm font-mono text-gray-700">{ref}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${badge}`}>
+                        {label}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500 hidden sm:table-cell">{submission.trust}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{submission.requester?.name ?? '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 hidden md:table-cell max-w-xs truncate">{desc}</td>

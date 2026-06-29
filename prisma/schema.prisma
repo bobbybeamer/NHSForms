@@ -11,14 +11,15 @@ datasource db {
 // TypeScript enums are defined in src/types/enums.ts for type safety.
 
 model User {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  role        String
-  trust       String
-  submissions Submission[]
-  decisions   ApprovalStep[] @relation("DecidedBy")
-  auditEvents AuditEvent[]
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  role           String
+  trust          String
+  submissions    Submission[]
+  decisions      ApprovalStep[] @relation("DecidedBy")
+  assignedSteps  ApprovalStep[] @relation("AssignedTo")
+  auditEvents    AuditEvent[]
 }
 
 model FormType {
@@ -53,6 +54,8 @@ model ApprovalStep {
   decidedById  String?
   decidedBy    User?     @relation("DecidedBy", fields: [decidedById], references: [id])
   decidedAt    DateTime?
+  assignedToId String?
+  assignedTo   User?     @relation("AssignedTo", fields: [assignedToId], references: [id])
 }
 
 model AuditEvent {
