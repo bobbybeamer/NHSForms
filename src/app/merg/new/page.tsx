@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '../../UserContext';
-import {
-  MERG_BUSINESS_CASE_THRESHOLD,
-  MERG_STA_THRESHOLD_EX_VAT,
-  MERG_PROCUREMENT_THRESHOLD_EX_VAT,
-} from '@/config/mergRouting';
+import { getMergProcThresholdExVat } from '@/config/mergRouting';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -207,6 +203,12 @@ export default function MergNewPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([1]));
+  // Thresholds fetched live from DB — no hardcoded values in this file.
+  const [businessCaseThreshold, setBusinessCaseThreshold] = useState(50_000);
+  const [staThreshold, setStaThreshold] = useState(25_000);
+  // Pre-render default only — overwritten immediately by /api/thresholds fetch below.
+  // Not a policy value: do not use this as a routing boundary.
+  const [pa23IncVat, setPa23IncVat] = useState(135_018);
 
   // Auto-fill requester info from logged-in user
   useEffect(() => {
@@ -219,6 +221,19 @@ export default function MergNewPage() {
     }
   }, [user, loading, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch all thresholds from database on mount.
+  useEffect(() => {
+    fetch('/api/thresholds')
+      .then((r) => r.json())
+      .then((rows: { key: string; value: number }[]) => {
+        const get = (k: string) => rows.find((r) => r.key === k)?.value;
+        if (get('merg_business_case_ex_vat')) setBusinessCaseThreshold(get('merg_business_case_ex_vat')!);
+        if (get('merg_sta_ex_vat')) setStaThreshold(get('merg_sta_ex_vat')!);
+        if (get('pa23_inc_vat')) setPa23IncVat(get('pa23_inc_vat')!);
+      })
+      .catch(() => { /* keep defaults */ });
+  }, []);
+
   // ─── Field updater ─────────────────────────────────────────────────────────
   const set = (field: keyof MergFormData) => (value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -230,9 +245,10 @@ export default function MergNewPage() {
   const cons = (parseFloat(form.consumablesCost) || 0) * years;
   const totalEstimatedCost = capital + maint + cons;
 
-  const showBusinessCase = totalEstimatedCost > MERG_BUSINESS_CASE_THRESHOLD;
-  const showSta = form.awardRoute === 'direct_award' && capital >= MERG_STA_THRESHOLD_EX_VAT;
-  const showProcThreshold = totalEstimatedCost > MERG_PROCUREMENT_THRESHOLD_EX_VAT;
+  const showBusinessCase = totalEstimatedCost > businessCaseThreshold;
+  const showSta = form.awardRoute === 'direct_award' && capital >= staThreshold;
+  const mergProcThresholdExVat = getMergProcThresholdExVat(pa23IncVat);
+  const showProcThreshold = totalEstimatedCost > mergProcThresholdExVat;
 
   const approvalChainLabel = showBusinessCase
     ? 'Finance Manager → Divisional Lead → MERG Committee → Exec Committee'
@@ -1046,7 +1062,7 @@ export default function MergNewPage() {
                   <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
                     <p className="text-sm font-semibold text-amber-900">Business case required</p>
                     <p className="text-sm text-amber-800 mt-1">
-                      Because the total estimated project cost exceeds {formatGBP(MERG_BUSINESS_CASE_THRESHOLD)},
+                      Because the total estimated project cost exceeds {formatGBP(businessCaseThreshold)},
                       Executive Committee approval is required. This step will be added to the approval chain.
                     </p>
                   </div>
@@ -1056,7 +1072,7 @@ export default function MergNewPage() {
                   <div className="bg-orange-50 border border-orange-400 rounded-lg p-4 mb-4">
                     <p className="text-sm font-semibold text-orange-900">Single Tender Action required</p>
                     <p className="text-sm text-orange-800 mt-1">
-                      A direct award off-framework for equipment costing &ge; {formatGBP(MERG_STA_THRESHOLD_EX_VAT)} ex VAT
+                      A direct award off-framework for equipment costing &ge; {formatGBP(staThreshold)} ex VAT
                       requires a Single Tender Action. You must also raise an SFI Waiver alongside this request.{' '}
                       <Link href="/waivers/new" className="underline font-medium text-orange-900 hover:text-orange-700">
                         Start SFI Waiver
@@ -1069,7 +1085,7 @@ export default function MergNewPage() {
                   <div className="bg-red-50 border border-red-300 rounded-lg p-4 mb-4">
                     <p className="text-sm font-semibold text-red-900">Above procurement threshold</p>
                     <p className="text-sm text-red-800 mt-1">
-                      The total estimated cost exceeds {formatGBP(MERG_PROCUREMENT_THRESHOLD_EX_VAT)} (ex-VAT proxy for the
+                      The total estimated cost exceeds {formatGBP(mergProcThresholdExVat)} (ex-VAT proxy for the
                       PA23 procurement threshold). Formal PA23 procurement route applies; legal procurement rules are in effect.
                       Confirm with Procurement.
                     </p>

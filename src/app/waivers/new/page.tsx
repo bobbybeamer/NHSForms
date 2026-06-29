@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '../../UserContext';
 import {
-  PA23_THRESHOLD,
   JUSTIFICATION_REASONS,
   computeApprovalChain,
 } from '@/config/waiverRouting';
@@ -56,6 +55,9 @@ export default function NewWaiverPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Pre-render default only — overwritten immediately by /api/thresholds fetch below.
+  // Not a policy value: do not use this as a routing boundary.
+  const [pa23Threshold, setPa23Threshold] = useState<number>(135_018);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,17 +68,28 @@ export default function NewWaiverPage() {
     }
   }, [user, loading, router]);
 
+  // Fetch live threshold from database — drives both the banner and approval chain preview.
+  useEffect(() => {
+    fetch('/api/thresholds')
+      .then((r) => r.json())
+      .then((rows: { key: string; value: number }[]) => {
+        const pa23 = rows.find((r) => r.key === 'pa23_inc_vat');
+        if (pa23) setPa23Threshold(pa23.value);
+      })
+      .catch(() => { /* keep default */ });
+  }, []);
+
   const purchaseNum = parseFloat(form.purchaseValueExVat) || 0;
   const vatNum = parseFloat(form.vat) || 0;
   const totalValueIncVat = purchaseNum + vatNum;
 
   const approvalChain = useMemo(
-    () => computeApprovalChain(totalValueIncVat),
-    [totalValueIncVat]
+    () => computeApprovalChain(totalValueIncVat, pa23Threshold),
+    [totalValueIncVat, pa23Threshold]
   );
 
   const wordCount = countWords(form.waiverCircumstances);
-  const overThreshold = totalValueIncVat >= PA23_THRESHOLD;
+  const overThreshold = totalValueIncVat >= pa23Threshold;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -346,7 +359,7 @@ export default function NewWaiverPage() {
             >
               <p className="font-semibold">Above the procurement threshold</p>
               <p className="text-sm mt-1">
-                This value ({formatGBP(totalValueIncVat)}) is at or above the PA23 threshold ({formatGBP(PA23_THRESHOLD)}).
+                This value ({formatGBP(totalValueIncVat)}) is at or above the PA23 threshold ({formatGBP(pa23Threshold)}).
                 A direct-award waiver requires a PA23 transparency notice and a mandatory standstill period.
                 Confirm with Procurement before proceeding.
               </p>

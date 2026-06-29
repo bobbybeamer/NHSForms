@@ -12,6 +12,40 @@ async function main() {
   await prisma.submission.deleteMany();
   await prisma.formType.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.threshold.deleteMany();
+
+  // ── Configurable thresholds ─────────────────────────────────────────────────
+  await prisma.threshold.createMany({
+    data: [
+      {
+        key: 'pa23_inc_vat',
+        value: 135_018,
+        label: 'PA23 procurement threshold (inc VAT)',
+        comment:
+          'PA23 goods/services threshold inc VAT, Jan 2026. ' +
+          'Revised every 2 years — confirm exact figure with procurement before changing.',
+      },
+      {
+        key: 'merg_business_case_ex_vat',
+        value: 50_000,
+        label: 'MERG business case threshold (ex VAT)',
+        comment:
+          'Total estimated project cost (capital + maint over life + consumables) ' +
+          'above which a business case and Executive Committee approval are required. ' +
+          'TO CONFIRM WITH CLIENT: confirm definition of "total" and whether VAT applies.',
+      },
+      {
+        key: 'merg_sta_ex_vat',
+        value: 25_000,
+        label: 'MERG Single Tender Action threshold (ex VAT)',
+        comment:
+          'Capital cost ex VAT above which a direct-award off-framework purchase ' +
+          'requires a Single Tender Action and an accompanying SFI Waiver. ' +
+          'TO CONFIRM WITH CLIENT.',
+      },
+    ],
+  });
+  console.log('Created 3 configurable thresholds');
 
   // Create form types
   const formType = await prisma.formType.create({

@@ -5,6 +5,13 @@ import { computeMergApprovalChain } from '@/config/mergRouting';
 import { CARE_GROUP_FM_EMAIL } from '@/config/careGroups';
 import { SubmissionStatus, ApprovalStepStatus, Role } from '@/types/enums';
 
+// Fetch a threshold from the database. Falls back to the given default if the
+// record is somehow missing (should not happen after seeding).
+async function getThreshold(key: string, fallback: number): Promise<number> {
+  const row = await prisma.threshold.findUnique({ where: { key } });
+  return row?.value ?? fallback;
+}
+
 export async function GET(request: NextRequest) {
   const userId = request.cookies.get('nhs_user_id')?.value;
   if (!userId) {
@@ -46,14 +53,12 @@ export async function POST(request: NextRequest) {
       ? SubmissionStatus.DRAFT
       : SubmissionStatus.IN_APPROVAL;
 
-    // Parse fieldValues so we can access individual fields for MERG routing
     const parsedFields = typeof fieldValues === 'object' && fieldValues !== null
       ? fieldValues
       : (() => { try { return JSON.parse(fieldValues ?? '{}'); } catch { return {}; } })();
 
     // NOTE: For MERG submissions, totalValueIncVat stores the total estimated
-    // project cost ex VAT (MERG has no separate VAT field; assumption — confirm
-    // with client whether VAT should be added separately).
+    // project cost (ex VAT). MERG has no separate VAT field — confirm with client.
     const submission = await prisma.submission.create({
       data: {
         formTypeKey,
@@ -69,15 +74,20 @@ export async function POST(request: NextRequest) {
       let chain: string[];
 
       if (formTypeKey === 'merg_equipment') {
-        // Use totalEstimatedCost from fieldValues for MERG routing
+        // Fetch business-case threshold from DB — no hardcoded value here.
+        const businessCaseThreshold = await getThreshold('merg_business_case_ex_vat', 50_000);
         const totalCostExVat = parsedFields.totalEstimatedCost ?? 0;
-        chain = computeMergApprovalChain(totalCostExVat);
+        chain = computeMergApprovalChain(totalCostExVat, businessCaseThreshold);
       } else {
-        chain = computeApprovalChain(totalValueIncVat ?? 0);
+        // Fetch PA23 threshold from DB — this drives the Waiver final-approver band.
+        // Fallback only fires if the DB row is absent (should never happen post-seed).
+        // The 135_018 here is a safety net, NOT a routing policy value.
+        const pa23IncVat = await getThreshold('pa23_inc_vat', 135_018);
+        chain = computeApprovalChain(totalValueIncVat ?? 0, pa23IncVat);
       }
 
       for (let i = 0; i < chain.length; i++) {
-        // For MERG step 1 (FINANCE_MANAGER), look up the specific FM by care group
+        // For MERG step 1 (FINANCE_MANAGER), look up the specific FM by care group.
         let assignedToId: string | null = null;
         if (formTypeKey === 'merg_equipment' && i === 0 && chain[0] === Role.FINANCE_MANAGER) {
           const careGroup = parseInt(parsedFields.careGroup ?? '1', 10);

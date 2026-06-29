@@ -68,3 +68,14 @@ model AuditEvent {
   detail       String
   createdAt    DateTime   @default(now())
 }
+
+// Configurable thresholds editable via the Admin screen.
+// Each record is a named numeric rule (e.g. PA23 procurement threshold).
+// Routing functions read from here at request time — no hardcoded values in code.
+model Threshold {
+  key       String   @id   // e.g. "pa23_inc_vat"
+  value     Float
+  label     String         // human-readable name shown in admin UI
+  comment   String         // explains units, legal basis, review cadence
+  updatedAt DateTime @updatedAt
+}

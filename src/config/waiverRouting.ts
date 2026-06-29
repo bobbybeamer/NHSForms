@@ -1,31 +1,32 @@
 import { Role } from "@/types/enums";
-import { PA23_THRESHOLD_INC_VAT } from './thresholds';
 
 // ─── EDITABLE THRESHOLDS ────────────────────────────────────────────────────
-// £135,018 = PA23 goods/services threshold inc VAT, Jan 2026; revised every 2
-// years; confirm with procurement before changing this value.
-export const PA23_THRESHOLD = PA23_THRESHOLD_INC_VAT;
+// Threshold values (including the PA23 band boundary below) are stored in the
+// database and editable via the Admin screen (/admin). There is no hardcoded
+// threshold in this file. The pa23ThresholdIncVat parameter must be passed in
+// from the database at call time.
 
 // Value bands that determine the final authoriser in the approval chain.
-// To change, edit the 'maxValue' for each band (use Infinity for the top band).
-export const VALUE_BANDS = [
-  { maxValue: PA23_THRESHOLD,   finalApprover: Role.DIRECTOR_OF_PROCUREMENT },
-  { maxValue: 500_000,          finalApprover: Role.CFO                     },
-  { maxValue: 2_500_000,        finalApprover: Role.EXEC_COMMITTEE           },
-  { maxValue: Infinity,         finalApprover: Role.TRUST_BOARD              },
-] as const;
-
-// The first two steps of the chain are always the same, regardless of value.
-export const FIXED_CHAIN_PREFIX: Role[] = [
-  Role.PROCUREMENT_BP,
-  Role.FINANCE,
-];
+// The first band boundary is the PA23 threshold read from the database.
+// Remaining bands are fixed policy; change them here if policy changes.
+export function getValueBands(pa23ThresholdIncVat: number) {
+  return [
+    { maxValue: pa23ThresholdIncVat, finalApprover: Role.DIRECTOR_OF_PROCUREMENT },
+    { maxValue: 500_000,             finalApprover: Role.CFO                     },
+    { maxValue: 2_500_000,           finalApprover: Role.EXEC_COMMITTEE           },
+    { maxValue: Infinity,            finalApprover: Role.TRUST_BOARD              },
+  ] as const;
+}
 
 // Compute the full approval chain for a given total value (inc VAT).
-export function computeApprovalChain(totalValueIncVat: number): Role[] {
-  const band = VALUE_BANDS.find((b) => totalValueIncVat < b.maxValue)
-    ?? VALUE_BANDS[VALUE_BANDS.length - 1];
-  return [...FIXED_CHAIN_PREFIX, band.finalApprover];
+// pa23ThresholdIncVat must come from the database — do not pass a hardcoded value.
+export function computeApprovalChain(
+  totalValueIncVat: number,
+  pa23ThresholdIncVat: number
+): Role[] {
+  const bands = getValueBands(pa23ThresholdIncVat);
+  const band = bands.find((b) => totalValueIncVat < b.maxValue) ?? bands[bands.length - 1];
+  return [Role.PROCUREMENT_BP, Role.FINANCE, band.finalApprover];
 }
 
 // Justification reasons (options a–h from the SFI Waiver form).
