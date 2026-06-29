@@ -19,7 +19,8 @@ export async function GET(
       approvalSteps: {
         orderBy: { sequence: 'asc' },
         include: {
-          decidedBy: { select: { id: true, name: true } },
+          decidedBy:  { select: { id: true, name: true } },
+          assignedTo: { select: { id: true, name: true, email: true } },
         },
       },
       auditEvents: {
