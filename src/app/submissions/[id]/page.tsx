@@ -10,6 +10,12 @@ interface DecidedBy {
   name: string;
 }
 
+interface AssignedTo {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface ApprovalStep {
   id: string;
   sequence: number;
@@ -18,6 +24,19 @@ interface ApprovalStep {
   decisionNote?: string | null;
   decidedBy?: DecidedBy | null;
   decidedAt?: string | null;
+  assignedTo?: AssignedTo | null;
+}
+
+interface Recipient {
+  name: string;
+  email: string;
+}
+
+interface EmailDraft {
+  to: Recipient[];
+  cc: Recipient[];
+  subject: string;
+  body: string;
 }
 
 interface AuditEvent {
@@ -145,6 +164,12 @@ export default function SubmissionDetailPage() {
   const [deciding, setDeciding] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Email generation state
+  const [sopTemplate, setSopTemplate] = useState<string>('');
+  const [emailDraft, setEmailDraft] = useState<EmailDraft | null>(null);
+  const [generatingEmail, setGeneratingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
@@ -195,6 +220,45 @@ export default function SubmissionDetailPage() {
       setDeciding(false);
     }
   };
+
+  const generateEmail = async (templateType: string) => {
+    if (!submission) return;
+    setEmailError(null);
+    setEmailDraft(null);
+    setGeneratingEmail(true);
+    try {
+      const res = await fetch(`/api/submissions/${submission.id}/generate-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateType }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEmailError(data.error ?? 'Failed to generate email');
+        setGeneratingEmail(false);
+        return;
+      }
+      setEmailDraft(data as EmailDraft);
+      // Refresh submission to show new audit event
+      const refreshed = await fetch(`/api/submissions/${submission.id}`);
+      if (refreshed.ok) setSubmission(await refreshed.json());
+    } catch {
+      setEmailError('Network error. Please try again.');
+    } finally {
+      setGeneratingEmail(false);
+    }
+  };
+
+  function buildMailto(draft: EmailDraft): string {
+    const toStr = draft.to.map((r) => r.email).join(',');
+    const ccStr = draft.cc.map((r) => r.email).join(',');
+    return (
+      `mailto:${encodeURIComponent(toStr)}` +
+      `?cc=${encodeURIComponent(ccStr)}` +
+      `&subject=${encodeURIComponent(draft.subject)}` +
+      `&body=${encodeURIComponent(draft.body)}`
+    );
+  }
 
   if (loading || !user || fetching) {
     return <div className="text-gray-500">Loading...</div>;
@@ -292,6 +356,8 @@ export default function SubmissionDetailPage() {
                 </>
               )}
               <FieldRow label="Award route" value={fields.awardRoute === 'direct_award' ? 'Direct award (off-framework)' : 'Framework agreement'} />
+              <FieldRow label="URN requested from NHS Supply Chain" value={fields.urnRequested} />
+              <FieldRow label="For SHYPS" value={fields.isShyps} />
               <FieldRow label="Conflict of interest" value={fields.coi} />
               {fields.coi === 'Yes' && <FieldRow label="COI details" value={fields.coiDetails} />}
               <FieldRow label="Requester" value={submission.requester?.name} />
@@ -416,6 +482,136 @@ export default function SubmissionDetailPage() {
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-2">A decision note is required before acting.</p>
+        </div>
+      )}
+
+      {/* ── Email generation ── */}
+      {submission.status !== 'DRAFT' && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+          <h2 className="font-semibold text-gray-900">Generate email</h2>
+          <p className="text-sm text-gray-500">
+            The system generates and previews emails only — no email is sent automatically.
+            Use &ldquo;Open in email client&rdquo; to open the pre-filled draft in your mail application.
+          </p>
+
+          {/* Part A — Notification email */}
+          <div className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+            <p className="text-sm font-semibold text-gray-800 mb-1">Approval notification email</p>
+            <p className="text-xs text-gray-500 mb-3">
+              Addressed to the approver for the <strong>current active step only</strong>.
+              It is not possible to generate an email for a pending later step.
+            </p>
+            {activeStep ? (
+              <button
+                onClick={() => generateEmail('notification')}
+                disabled={generatingEmail}
+                style={{ backgroundColor: '#005EB8' }}
+                className="text-white text-sm font-medium px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+              >
+                {generatingEmail ? 'Generating…' : `Generate for Step ${activeStep.sequence} — ${roleLabel(activeStep.approverRole)}`}
+              </button>
+            ) : (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                No active step — submission is {statusLabel(submission.status).toLowerCase()}. Notification email not applicable.
+              </p>
+            )}
+          </div>
+
+          {/* Part C — SOP email templates (MERG only) */}
+          {isMerg && (
+            <div className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+              <p className="text-sm font-semibold text-gray-800 mb-1">MERG SOP emails</p>
+              <p className="text-xs text-gray-500 mb-3">
+                Recipients are computed automatically from the care group, site, funding source,
+                maintenance route, and SHYPS flag stored on this submission.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  id="sopTemplate"
+                  value={sopTemplate}
+                  onChange={(e) => { setSopTemplate(e.target.value); setEmailDraft(null); setEmailError(null); }}
+                  className="border border-gray-300 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#005EB8]"
+                  aria-label="Select SOP email template"
+                >
+                  <option value="">-- Select template --</option>
+                  <option value="quote_request">Request for Quote (to supplier)</option>
+                  <option value="concluded_purchasing">Application Concluded — Purchasing</option>
+                  <option value="concluded_leasing">Application Completed — Leasing</option>
+                </select>
+                <button
+                  onClick={() => { if (sopTemplate) generateEmail(sopTemplate); }}
+                  disabled={!sopTemplate || generatingEmail}
+                  style={{ backgroundColor: sopTemplate ? '#005EB8' : undefined }}
+                  className="text-white text-sm font-medium px-4 py-2 rounded hover:opacity-90 disabled:opacity-50 disabled:bg-gray-300"
+                >
+                  {generatingEmail ? 'Generating…' : 'Generate'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {emailError && (
+            <div className="bg-red-50 border border-red-300 text-red-800 rounded p-3 text-sm" role="alert">
+              {emailError}
+            </div>
+          )}
+
+          {/* Email preview */}
+          {emailDraft && (
+            <div className="border border-blue-200 rounded-lg bg-blue-50 p-5 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <p className="text-sm font-semibold text-blue-900">Email preview</p>
+                <a
+                  href={buildMailto(emailDraft)}
+                  className="inline-block text-sm font-medium px-4 py-2 rounded text-white hover:opacity-90"
+                  style={{ backgroundColor: '#005EB8' }}
+                  aria-label="Open this email in your mail client"
+                >
+                  Open in email client
+                </a>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700 inline-block w-12">To:</span>
+                  <span className="text-gray-900">
+                    {emailDraft.to.map((r, i) => (
+                      <span key={i} className="inline-block bg-white border border-blue-200 rounded px-2 py-0.5 text-xs mr-1 mb-1">
+                        {r.name} &lt;{r.email}&gt;
+                      </span>
+                    ))}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 inline-block w-12">Cc:</span>
+                  <span className="text-gray-900">
+                    {emailDraft.cc.map((r, i) => (
+                      <span key={i} className="inline-block bg-white border border-blue-200 rounded px-2 py-0.5 text-xs mr-1 mb-1">
+                        {r.name} &lt;{r.email}&gt;
+                      </span>
+                    ))}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700 inline-block w-16">Subject:</span>
+                  <span className="text-gray-900 font-medium">{emailDraft.subject}</span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium text-gray-600 mb-1 uppercase tracking-wide">Body</p>
+                <pre className="text-xs text-gray-800 bg-white border border-blue-100 rounded p-4 whitespace-pre-wrap font-mono leading-relaxed max-h-80 overflow-y-auto">
+                  {emailDraft.body}
+                </pre>
+              </div>
+
+              <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+                Confirm all recipient email addresses with the client before sending.
+                Addresses marked &ldquo;confirm before sending&rdquo; are placeholders.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
