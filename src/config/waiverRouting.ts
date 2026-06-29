@@ -9,10 +9,10 @@ export const PA23_THRESHOLD = PA23_THRESHOLD_INC_VAT;
 // Value bands that determine the final authoriser in the approval chain.
 // To change, edit the 'maxValue' for each band (use Infinity for the top band).
 export const VALUE_BANDS = [
-  { maxValue: 135_018,   finalApprover: Role.DIRECTOR_OF_PROCUREMENT },
-  { maxValue: 500_000,   finalApprover: Role.CFO                     },
-  { maxValue: 2_500_000, finalApprover: Role.EXEC_COMMITTEE           },
-  { maxValue: Infinity,  finalApprover: Role.TRUST_BOARD              },
+  { maxValue: PA23_THRESHOLD,   finalApprover: Role.DIRECTOR_OF_PROCUREMENT },
+  { maxValue: 500_000,          finalApprover: Role.CFO                     },
+  { maxValue: 2_500_000,        finalApprover: Role.EXEC_COMMITTEE           },
+  { maxValue: Infinity,         finalApprover: Role.TRUST_BOARD              },
 ] as const;
 
 // The first two steps of the chain are always the same, regardless of value.
