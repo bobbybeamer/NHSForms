@@ -20,6 +20,7 @@ interface MergFormData {
   dept: string;
   site: string;
   careGroup: string;
+  isShyps: string; // 'Yes' | 'No' — drives email recipient rules
   // Step 4: Environment
   envEnergy: string;
   envExplanation: string;
@@ -70,6 +71,7 @@ interface MergFormData {
   supplier3: string;
   procSelect: string;
   procDetails: string;
+  urnRequested: string; // 'Yes' | 'No' — whether a URN was requested from NHS Supply Chain
   // Step 9: Financial
   anticipatedLife: string;
   capitalCostExVat: string;
@@ -85,7 +87,7 @@ interface MergFormData {
 
 const EMPTY_FORM: MergFormData = {
   coi: '', coiDetails: '',
-  rqName: '', rqRole: '', contact: '', rqEmail: '', dept: '', site: '', careGroup: '',
+  rqName: '', rqRole: '', contact: '', rqEmail: '', dept: '', site: '', careGroup: '', isShyps: '',
   envEnergy: '', envExplanation: '', socialValue: '', svExplanation: '',
   proposedSupplier: '', model: '', qty: '', productLink: '', mpc: '', onReplacementPlan: '',
   whereUsed: '', desc: '', why: '', needsWorks: '', worksScope: '',
@@ -94,7 +96,7 @@ const EMPTY_FORM: MergFormData = {
   needsNet: '', itRef: '', itAdvice: '', storesPid: '', dtacConfirm: '', dpiaConfirm: '',
   imaging: '', physConfirm: '', pacsAdviceConfirm: '', pacs: '',
   training: '', trainNotes: '', maint: '', maintNotes: '',
-  supplier1: '', supplier2: '', supplier3: '', procSelect: '', procDetails: '',
+  supplier1: '', supplier2: '', supplier3: '', procSelect: '', procDetails: '', urnRequested: '',
   anticipatedLife: '', capitalCostExVat: '', annualMaintCost: '', consumablesCost: '',
   awardRoute: '', fundingSource: '', fundName: '', fundNo: '', charityDate: '', charityNotes: '',
 };
@@ -582,6 +584,17 @@ export default function MergNewPage() {
                       ))}
                     </Select>
                   </FieldGroup>
+                  <FieldGroup>
+                    <Label htmlFor="isShyps">Is this equipment for SHYPS?</Label>
+                    <Select id="isShyps" value={form.isShyps} onChange={set('isShyps')}>
+                      <option value="">-- Select --</option>
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      SHYPS equipment uses a different maintenance notification route. This answer affects the recipients of the concluded/completed email.
+                    </p>
+                  </FieldGroup>
                 </div>
               </div>
             )}
@@ -1006,6 +1019,18 @@ export default function MergNewPage() {
                     />
                   </FieldGroup>
                 )}
+
+                <FieldGroup>
+                  <Label htmlFor="urnRequested">Has a URN been requested from NHS Supply Chain?</Label>
+                  <Select id="urnRequested" value={form.urnRequested} onChange={set('urnRequested')}>
+                    <option value="">-- Select --</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    If yes, NHS Supply Chain will be added to the recipients of the concluded email.
+                  </p>
+                </FieldGroup>
               </div>
             )}
 
