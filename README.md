@@ -21,14 +21,28 @@ The platform allows NHS staff to:
 
 ## Tech stack
 
-- **Next.js 14** (App Router) with TypeScript
-- **Tailwind CSS** for styling
-- **Prisma ORM 5** with SQLite (`prisma/dev.db`)
-- No third-party authentication (demo only)
+- **Next.js 16** (App Router, Turbopack) with TypeScript
+- **Tailwind CSS 4** for styling
+- **Prisma ORM 5** with **Postgres** (from Build 8; Builds 1–7 used SQLite — see "Going back to SQLite")
+- Hosted on **Vercel** with Vercel's **Prisma Postgres** storage integration
+- No real authentication — demo role-switcher only. Every page shows a non-dismissable "PROTOTYPE — demo only" banner.
 
 ---
 
-## How to run
+## Environment variables
+
+| Name | Required | What it is | Where the value comes from |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | Postgres connection string (`postgres://…db.prisma.io:5432/…?sslmode=require`). Used by the app, migrations and the seed. | **Vercel:** set automatically when the Prisma Postgres database is connected to the project (the integration also sets `POSTGRES_URL` and `PRISMA_DATABASE_URL` with the same value — the app reads only `DATABASE_URL`). **Local:** copy it into `.env` (see `.env.example`). |
+| `DATABASE_URL_POOLED` | No | Pooled connection string (host `pooled.db.prisma.io`) from the Prisma Console. If set, the running app uses it instead; migrations and the seed still use `DATABASE_URL`. | Prisma Console → your database → Connect. Not needed for a low-traffic demo. |
+
+No secret is committed: `.env` is git-ignored and `.env.example` holds placeholders only. Each app instance is capped at one database connection (`src/lib/prisma.ts`) because Prisma Postgres limits direct connections (5 usable on the free plan).
+
+---
+
+## How to run locally
+
+**Chosen setup:** local development uses the **same hosted Prisma Postgres database** as the Vercel demo. It's the simplest option — one database, one schema, nothing to install. The trade-off: anything you do locally (new requests, approvals, admin edits) shows up in the client-facing demo, and vice versa. If that becomes a problem, create a second free Prisma Postgres database in Vercel (Storage → Create Database) and put *its* `DATABASE_URL` in your local `.env` instead.
 
 ### 1. Install dependencies
 
@@ -36,33 +50,73 @@ The platform allows NHS staff to:
 npm install
 ```
 
-### 2. Set up the database
+`postinstall` runs `prisma generate` automatically.
+
+### 2. Point at the database
 
 ```bash
-npx prisma generate
-npx prisma migrate dev --name init
-npx prisma db seed
+cp .env.example .env
 ```
 
-This creates the SQLite database at `prisma/dev.db` and populates it with demo users and sample submissions.
+Open `.env` and replace the placeholder `DATABASE_URL` value with the real one (Vercel → **Storage** → your database → **.env.local** tab → **Show secret** → copy the `DATABASE_URL` line). Keep the quotes.
 
-#### Upgrading an existing database to Build 7 (keeps your data)
+### 3. Create the tables and demo data (only if the database is new)
+
+If the database has already been set up by a Vercel deploy, skip this step. For a brand-new, empty database:
 
 ```bash
-npx prisma migrate deploy          # adds the AdminAuditEvent table + the two waiver band settings
-npx prisma generate                # refreshes the Prisma client for the new table
-npx tsx prisma/add-admin-user.ts   # adds Alex Admin; safe to run twice
+npx prisma migrate deploy   # creates the tables
+npx prisma db seed          # loads the demo data — WIPES any existing data first
 ```
 
-None of these delete or reset data. To start from a clean demo dataset instead, `npx prisma migrate reset` drops the database, re-applies all migrations and re-seeds (including Alex Admin) — it **wipes** existing submissions.
-
-### 3. Start the dev server
+### 4. Start the dev server
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Going back to SQLite
+
+Your old `prisma/dev.db` is untouched (it is git-ignored and Build 8 never reads it). The last SQLite version of the app is tagged `sqlite-final`: `git checkout sqlite-final` and `npm run dev` runs it against `prisma/dev.db` exactly as before; `git checkout main` returns to the Postgres version. The SQLite migrations are archived in `prisma/sqlite-migrations-archive/`.
+
+---
+
+## Hosting on Vercel
+
+### How a deploy works
+
+`vercel.json` tells Vercel to run `npm run vercel-build`, which does, in order:
+
+1. `prisma generate` — builds the database client for Vercel's servers.
+2. `prisma migrate deploy` — applies any new migrations in `prisma/migrations/` to the hosted database. This is how schema changes reach the hosted database: commit the migration, push, and the next deploy applies it. Already-applied migrations are skipped; it never resets data.
+3. `tsx prisma/seed-if-empty.ts` — seeds the demo data **only if the database has no users** (i.e. the first deploy). On later deploys it does nothing, so redeploying never wipes demo activity.
+4. `npm run build` — the normal Next.js production build.
+
+Every push to `main` deploys to the production URL. Pushes to other branches create preview deployments (by default only visible to people logged in to your Vercel team).
+
+### First-time setup
+
+Done in the browser — follow the step-by-step walkthrough in [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md). In short: import the GitHub repo into Vercel → add a Prisma Postgres database from the project's **Storage** tab and connect it to the project → redeploy. No environment variables need to be typed by hand.
+
+### Resetting the hosted demo
+
+To wipe the hosted demo back to the standard demo data, run from your machine with `DATABASE_URL` in `.env` pointing at the hosted database:
+
+```bash
+npx prisma db seed
+```
+
+This **deletes all data** in that database and re-creates the demo set (all roles including Alex Admin, the three care-group Finance Managers, the example submissions, and the five threshold/band settings).
+
+### If a deploy fails
+
+Open the failed deployment in Vercel → **Build Logs** and look for the first red error:
+
+- `Environment variable not found: DATABASE_URL` — the database isn't connected to the project, or not for that environment. Storage → your database → connect it to the project for Production and Preview, then **Redeploy**.
+- `P1001: Can't reach database server` or `too many connections` — wait a minute and **Redeploy**; check the database is active in the Storage tab.
+- A TypeScript or build error — the same error appears locally with `npm run build`; fix, commit and push.
 
 ---
 
@@ -205,14 +259,17 @@ prisma/
   seed.ts                      # Demo data (wipes and recreates)
   build7Data.ts                # Waiver band rows + admin user shared by seed and upgrade script
   add-admin-user.ts            # Adds Alex Admin to an existing DB without touching other data
-  dev.db                       # SQLite database (created on migrate)
+  migrations/                  # Postgres migrations (applied by prisma migrate deploy)
+  sqlite-migrations-archive/   # Builds 1–7 SQLite migrations (history only)
+  seed-if-empty.ts             # Seeds only when the DB has no users (runs on every Vercel build)
+  dev.db                       # Old local SQLite DB (git-ignored; used only by tag sqlite-final)
 ```
 
 ---
 
 ## Admin access control and auditing (Build 7)
 
-- **Role:** `ADMIN` (roles are plain strings in SQLite, so adding it needed no schema change). Demo user: Alex Admin.
+- **Role:** `ADMIN` (roles are plain strings, so adding it needed no schema change). Demo user: Alex Admin.
 - **`/admin`** is a server component: it looks up the user from the login cookie and renders the admin panel only for `ADMIN`; everyone else gets a "Not authorised" page. The demo role-switcher login is unchanged — real NHS SSO is a later build.
 - **`PATCH /api/thresholds/[key]`** — `ADMIN` only (403 otherwise, 401 if not logged in), enforced in the route regardless of UI. `GET /api/thresholds` stays open because the forms need it.
 - **Auditing:** each successful edit writes an `AdminAuditEvent` (actor, setting key and label, old value, new value, timestamp) in the same transaction as the change. `GET /api/admin/audit` (`ADMIN` only) returns the 50 most recent; shown as "Recent admin changes" in `/admin`.
@@ -317,3 +374,4 @@ The following features are out of scope for this prototype:
 | Build 5 | Per-step authorisation: decide and notification-email endpoints check the step's assigned approver (or role, for role-only steps), not just the role; USER_GUIDE corrections (MERG step list, care-group rule, leasing recipients) |
 | Build 6 | Request-more-information loop: requester responds and resubmits to the same step (`/respond`), full audit trail; notification email can also be generated by the requester or a prior approver |
 | Build 7 | ADMIN role (Alex Admin); `/admin` and threshold PATCH restricted to ADMIN; `AdminAuditEvent` table and "Recent admin changes" view; £500k/£2.5m waiver bands moved into the database and editable in `/admin` (migration `20261017000000_admin_audit_and_waiver_bands`) |
+| Build 8 | Hosted demo: SQLite → Postgres (`DATABASE_URL` from Vercel's Prisma Postgres integration), Postgres baseline migration (SQLite migrations archived), Vercel build (`vercel.json` → generate, migrate deploy, seed-if-empty, build), non-dismissable PROTOTYPE banner, demo sign-in note |
