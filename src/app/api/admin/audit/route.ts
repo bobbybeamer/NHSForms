@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   const events = await prisma.adminAuditEvent.findMany({
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take: 50,
     include: { actor: { select: { id: true, name: true } } },
   });

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -40,7 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Prisma SQLite database (generated — run prisma migrate dev to recreate)
+# Local SQLite database from Builds 1–7 (kept on disk, not used from Build 8)
 prisma/dev.db
 prisma/dev.db-journal
 

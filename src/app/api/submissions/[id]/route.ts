@@ -24,7 +24,7 @@ export async function GET(
         },
       },
       auditEvents: {
-        orderBy: { createdAt: 'asc' },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], // id breaks same-millisecond ties (cuids increase)
         include: {
           actor: { select: { id: true, name: true } },
         },

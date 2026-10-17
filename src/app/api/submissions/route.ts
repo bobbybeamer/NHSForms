@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     include: {
       approvalSteps: { orderBy: { sequence: 'asc' } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
 
   return NextResponse.json(submissions);
