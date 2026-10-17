@@ -13,7 +13,7 @@ The platform allows NHS staff to:
 1. **Submit SFI Waiver requests** — A structured form capturing supplier, value, justification, conflict of interest, etc.
 2. **Submit MERG Equipment Requests** — A 9-step wizard covering COI, requester details, environment & social value, equipment details, case of need, risk checks, legal procurement, and financial summary.
 3. **Route for approval** — Automatically computes a multi-step approval chain based on form type and value
-4. **Review and decide** — Approvers can approve, reject, or request more information at their step
+4. **Review and decide** — Approvers can approve, reject, or request more information at their step — and only the intended approver for that step can act
 5. **Track progress** — Full audit trail on every submission
 6. **Generate SOP emails** — Preview and open pre-filled email drafts (approval notifications and MERG SOP templates) without the system sending email itself
 
@@ -182,6 +182,22 @@ prisma/
 
 ---
 
+## Per-step authorisation (Build 5)
+
+Every action on an approval step is checked against the approver snapshotted on the `ApprovalStep` row at submission time — never a live recompute. The rule lives in one place, `src/lib/stepAuthorisation.ts`, and is shared by the API and the submission detail page:
+
+- If the step has an `assignedToId` (MERG step 1 — the care-group Finance Manager), only that user may act. Holding `FINANCE_MANAGER` is not enough.
+- Otherwise (role-only steps, e.g. all waiver steps), the user must hold the step's `approverRole`.
+
+| Endpoint | Gated actions |
+|---|---|
+| `POST /api/submissions/[id]/decide` | `approve`, `reject`, `info_request` — the step must also be `ACTIVE` |
+| `POST /api/submissions/[id]/generate-email` | `notification` only (the MERG SOP templates are not tied to a step) |
+
+A failed check returns **403** (`"You are not the assigned approver for this step…"`) with no state change and no audit event.
+
+---
+
 ## Email generation (Build 4)
 
 The system **generates and previews** the emails that the trust's SOPs describe, but **never sends email itself**. Sending (SMTP/NHS mail relay) is a later, production-only step.
@@ -189,7 +205,7 @@ The system **generates and previews** the emails that the trust's SOPs describe,
 On any submission's detail page, a "Generate email" section offers:
 
 ### Approval notification email
-Addressed to the approver of the **currently active step only** — it is architecturally impossible to address a later, still-pending approver. The route enforces this: it returns an error if there is no active step. The UI labels the button with the step number and role. Cc: MERG Applications inbox (MERG) or Procurement BP (Waiver).
+Addressed to the approver of the **currently active step only** — it is architecturally impossible to address a later, still-pending approver. The route enforces this: it returns an error if there is no active step. Since Build 5, only the active step's intended approver can generate it (403 for anyone else). The UI labels the button with the step number and role. Cc: MERG Applications inbox (MERG) or Procurement BP (Waiver).
 
 ### MERG SOP email templates
 Three templates, selectable from a dropdown:
@@ -256,3 +272,4 @@ The following features are out of scope for this prototype:
 | Build 2 | MERG Equipment Request 9-step wizard, FINANCE_MANAGER / DIVISIONAL_LEAD / MERG_COMMITTEE roles, care-group FM routing |
 | Build 3 | Thresholds moved to database, `/admin` screen for live threshold editing, routing functions fully parameterised |
 | Build 4 | Email generation: approval notification + MERG SOP templates (quote request, concluded purchasing, completed leasing); recipient engine with SHYPS/charity/URN/maintenance-route conditional logic; new MERG form fields (SHYPS, URN); `EMAIL_GENERATED` audit events |
+| Build 5 | Per-step authorisation: decide and notification-email endpoints check the step's assigned approver (or role, for role-only steps), not just the role; USER_GUIDE corrections (MERG step list, care-group rule, leasing recipients) |
