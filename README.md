@@ -33,8 +33,9 @@ The platform allows NHS staff to:
 
 | Name | Required | What it is | Where the value comes from |
 |---|---|---|---|
-| `DATABASE_URL` | Yes | Postgres connection string (`postgres://…db.prisma.io:5432/…?sslmode=require`). Used by the app, migrations and the seed. | **Vercel:** set automatically when the Prisma Postgres database is connected to the project (the integration also sets `POSTGRES_URL` and `PRISMA_DATABASE_URL` with the same value — the app reads only `DATABASE_URL`). **Local:** copy it into `.env` (see `.env.example`). |
-| `DATABASE_URL_POOLED` | No | Pooled connection string (host `pooled.db.prisma.io`) from the Prisma Console. If set, the running app uses it instead; migrations and the seed still use `DATABASE_URL`. | Prisma Console → your database → Connect. Not needed for a low-traffic demo. |
+| `DATABASE_URL` | Yes | Postgres connection string. Used by the app, migrations and the seed. | **Vercel:** set automatically when the Prisma Postgres database is connected to the project (the integration also sets `POSTGRES_URL` and `PRISMA_DATABASE_URL` with the same value — the app reads only `DATABASE_URL`). **Local:** already set in your `.env` to the private local database, `postgresql://nhs_local:nhs_local@localhost:5433/nhsforms_dev` (see `.env.example`). **Never** put the hosted value in `.env` or `.env.local` — the app and scripts refuse it. |
+| `DATABASE_URL_POOLED` | No | Pooled connection string (host `pooled.db.prisma.io`) from the Prisma Console. If set **in Vercel**, the deployed app uses it instead; migrations and the seed still use `DATABASE_URL`. | Prisma Console → your database → Connect. Not needed for a low-traffic demo. |
+| `RESET_DEMO_DATA` | No | Set to `true` **in Vercel** to wipe and re-seed the hosted demo on the next deploy. Delete it straight afterwards. | You type it — see "Resetting the hosted demo". |
 
 No secret is committed: `.env` is git-ignored and `.env.example` holds placeholders only. Each app instance is capped at one database connection (`src/lib/prisma.ts`) because Prisma Postgres limits direct connections (5 usable on the free plan).
 
@@ -42,44 +43,43 @@ No secret is committed: `.env` is git-ignored and `.env.example` holds placehold
 
 ## How to run locally
 
-**Chosen setup:** local development uses the **same hosted Prisma Postgres database** as the Vercel demo. It's the simplest option — one database, one schema, nothing to install. The trade-off: anything you do locally (new requests, approvals, admin edits) shows up in the client-facing demo, and vice versa. If that becomes a problem, create a second free Prisma Postgres database in Vercel (Storage → Create Database) and put *its* `DATABASE_URL` in your local `.env` instead.
+**Local development uses its own private database, separate from the hosted demo.** It is a Postgres database that runs on your computer, stored in `.local-postgres/` in the project folder (git-ignored), and started automatically by `npm run dev`. It has no connection to the hosted Vercel database.
 
-### 1. Install dependencies
+### How the two are kept apart
 
-```bash
-npm install
-```
+| | Hosted demo database | Your local database |
+|---|---|---|
+| Where it lives | Prisma Postgres, attached to the Vercel project | `.local-postgres/` on your computer |
+| Address | Only in Vercel's environment variables | `localhost:5433/nhsforms_dev`, in your `.env` |
+| Who can change it | Only Vercel deploys (migrations, first-time seed, `RESET_DEMO_DATA`) and the deployed app | `npm run dev`, `npm run db:reset-local`, `npx prisma db seed` on your machine |
 
-`postinstall` runs `prisma generate` automatically.
+Three safeguards make the separation hard to break by accident:
 
-### 2. Point at the database
+1. **The address isn't on your computer.** `.env` contains only the local address, and the hosted connection string stays in Vercel.
+2. **Outside Vercel, the code refuses any database that isn't on this computer.** The app, the seed, `seed-if-empty` and `add-admin-user` all check the address before connecting. If it isn't `localhost`, they stop with "Refusing to connect…". There is no override switch. Vercel sets `VERCEL=1` on its servers, which is how the code knows it is allowed to use the hosted database there. See `src/lib/dbTarget.ts`.
+3. **`npm run dev` checks `.env` and `.env.local` before it starts.** It refuses to start if either one names a non-local database. It also passes the local address to the app directly, and regenerates the Prisma client so it can't carry an old built-in address.
 
-```bash
-cp .env.example .env
-```
+### How to tell which database you're using
 
-Open `.env` and replace the placeholder `DATABASE_URL` value with the real one (Vercel → **Storage** → your database → **.env.local** tab → **Show secret** → copy the `DATABASE_URL` line). Keep the quotes.
+- **In the browser:** when running locally, every page shows a black bar under the yellow PROTOTYPE banner: "LOCAL DEVELOPMENT — using your local database (localhost:5433/nhsforms_dev). Nothing here affects the hosted demo." The hosted site never shows this bar.
+- **In the terminal:** `npm run dev` prints `Local database running at localhost:5433/nhsforms_dev`. Seed scripts print `Database: … — LOCAL (this computer)`.
+- **Anytime:** `npm run db:which` prints where `.env` (and `.env.local`, if present) points, without showing any password.
 
-### 3. Create the tables and demo data (only if the database is new)
-
-If the database has already been set up by a Vercel deploy, skip this step. For a brand-new, empty database:
-
-```bash
-npx prisma migrate deploy   # creates the tables
-npx prisma db seed          # loads the demo data — WIPES any existing data first
-```
-
-### 4. Start the dev server
+### Commands
 
 ```bash
-npm run dev
+npm install            # first time only (also runs prisma generate)
+npm run dev            # starts the local database, applies migrations, seeds it if empty, starts the app
+                       # Ctrl+C stops both the app and the local database
+npm run db:reset-local # wipe your LOCAL database and reload the standard demo data (stop npm run dev first)
+npm run db:which       # show which database .env points at
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+The first `npm run dev` creates the local database and fills it with the demo data. Open [http://localhost:3000](http://localhost:3000). If `.env` is ever missing, copy `.env.example` to `.env`; it already contains the local address.
 
 ### Going back to SQLite
 
-Your old `prisma/dev.db` is untouched (it is git-ignored and Build 8 never reads it). The last SQLite version of the app is tagged `sqlite-final`: `git checkout sqlite-final` and `npm run dev` runs it against `prisma/dev.db` exactly as before; `git checkout main` returns to the Postgres version. The SQLite migrations are archived in `prisma/sqlite-migrations-archive/`.
+Your old `prisma/dev.db` is untouched (it is git-ignored and Build 8 never reads it). The last SQLite version of the app is tagged `sqlite-final`. Run `git checkout sqlite-final`, then **`npx prisma generate`**, then `npm run dev` to use it with `prisma/dev.db` as before. To return, run `git checkout main` and then `npx prisma generate` again. The `generate` step matters because the Prisma client is built for one database type at a time. (`npm run dev` on `main` regenerates it automatically.) The SQLite migrations are archived in `prisma/sqlite-migrations-archive/`.
 
 ---
 
@@ -102,13 +102,13 @@ Done in the browser — follow the step-by-step walkthrough in [DEPLOY_VERCEL.md
 
 ### Resetting the hosted demo
 
-To wipe the hosted demo back to the standard demo data, run from your machine with `DATABASE_URL` in `.env` pointing at the hosted database:
+The hosted database is only ever changed through Vercel, and so is a reset:
 
-```bash
-npx prisma db seed
-```
+1. In Vercel, go to **Settings → Environment Variables → Add New**. Set the name to `RESET_DEMO_DATA`, the value to `true`, and tick **Production**. Click **Save**.
+2. Go to **Deployments**, open the latest deployment's **⋯** menu and choose **Redeploy**. The build log shows `RESET_DEMO_DATA=true — wiping and re-seeding demo data...`.
+3. **Delete the `RESET_DEMO_DATA` variable straight away.** Otherwise every later deploy will wipe the demo again.
 
-This **deletes all data** in that database and re-creates the demo set (all roles including Alex Admin, the three care-group Finance Managers, the example submissions, and the five threshold/band settings).
+This **deletes all hosted demo data** and re-creates the standard set: all roles including Alex Admin, the three care-group Finance Managers, the example submissions, and the five threshold and band settings. Running `npx prisma db seed` on your own computer only ever resets your **local** database.
 
 ### If a deploy fails
 
@@ -252,6 +252,7 @@ src/
     auth.ts                    # Client-side auth helpers
     adminAuth.ts               # Server-side ADMIN check (page + APIs)
     stepAuthorisation.ts       # Per-step approver rules (Build 5/6)
+    dbTarget.ts                # Which DB are we on? Refuses non-local DB outside Vercel
   types/
     enums.ts                   # Role/Status TypeScript enums
 prisma/
@@ -263,6 +264,9 @@ prisma/
   sqlite-migrations-archive/   # Builds 1–7 SQLite migrations (history only)
   seed-if-empty.ts             # Seeds only when the DB has no users (runs on every Vercel build)
   dev.db                       # Old local SQLite DB (git-ignored; used only by tag sqlite-final)
+  dbGuard.ts                   # Seed/admin scripts: refuse non-local DB outside Vercel
+scripts/
+  local-db.mjs                 # npm run dev / db:reset-local / db:which — private local Postgres
 ```
 
 ---

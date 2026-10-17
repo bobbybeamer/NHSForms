@@ -96,5 +96,5 @@ Send your client the address under **Domains** — the one ending `.vercel.app` 
 ## Afterwards
 
 - **Updating the demo:** every change merged into `main` on GitHub deploys automatically. New database migrations are applied automatically on deploy. The demo data is **not** wiped by a redeploy.
-- **Resetting the demo data** back to the standard demo set: see README → "Resetting the hosted demo". It's one command, run from a computer that has the database address in its `.env` file.
-- **Local development** uses the same database — see README → "How to run locally".
+- **Resetting the demo data** back to the standard demo set is also done in Vercel: add the variable `RESET_DEMO_DATA` = `true`, redeploy, then **delete the variable**. See README → "Resetting the hosted demo".
+- **Local development** uses a completely separate database on the developer's own computer. Nothing done locally can change the hosted demo — see README → "How to run locally". Never copy the hosted `DATABASE_URL` onto a computer; the code refuses to use it outside Vercel anyway.
