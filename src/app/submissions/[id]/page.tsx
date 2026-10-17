@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '../../UserContext';
+import { isIntendedApprover } from '@/lib/stepAuthorisation';
 
 interface DecidedBy {
   id: string;
@@ -24,6 +25,7 @@ interface ApprovalStep {
   decisionNote?: string | null;
   decidedBy?: DecidedBy | null;
   decidedAt?: string | null;
+  assignedToId?: string | null;
   assignedTo?: AssignedTo | null;
 }
 
@@ -193,7 +195,9 @@ export default function SubmissionDetailPage() {
   }, [id]);
 
   const activeStep = submission?.approvalSteps.find((s) => s.status === 'ACTIVE');
-  const canAct = !!(activeStep && user && user.role === activeStep.approverRole);
+  // Same rule the API enforces: the assigned person if the step has one,
+  // otherwise anyone holding the step's role.
+  const canAct = !!(activeStep && user && isIntendedApprover(activeStep, user));
 
   const handleDecide = async (action: 'approve' | 'reject' | 'info_request') => {
     if (!activeStep || !submission) return;
@@ -501,7 +505,12 @@ export default function SubmissionDetailPage() {
               Addressed to the approver for the <strong>current active step only</strong>.
               It is not possible to generate an email for a pending later step.
             </p>
-            {activeStep ? (
+            {activeStep && !canAct ? (
+              <p className="text-xs text-gray-700 bg-white border border-gray-200 rounded px-3 py-2">
+                Only the assigned approver for step {activeStep.sequence} ({roleLabel(activeStep.approverRole)}
+                {activeStep.assignedTo ? ` — ${activeStep.assignedTo.name}` : ''}) can generate this email.
+              </p>
+            ) : activeStep ? (
               <button
                 onClick={() => generateEmail('notification')}
                 disabled={generatingEmail}

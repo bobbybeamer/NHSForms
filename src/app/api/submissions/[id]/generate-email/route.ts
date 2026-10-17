@@ -15,6 +15,7 @@ import {
   buildConcludedPurchasingEmail,
   buildConcludedLeasingEmail,
 } from '@/config/emailTemplates';
+import { approverCheckError } from '@/lib/stepAuthorisation';
 
 const VALID_TYPES = ['notification', 'quote_request', 'concluded_purchasing', 'concluded_leasing'];
 
@@ -77,6 +78,13 @@ export async function POST(
         { error: 'No active approval step — this submission has no step currently awaiting action. A notification email cannot be generated.' },
         { status: 400 }
       );
+    }
+
+    // Only the intended approver of the active step may generate its
+    // notification email — same rule as the decide endpoint.
+    const approverError = approverCheckError(activeStep, actor);
+    if (approverError) {
+      return NextResponse.json({ error: approverError }, { status: 403 });
     }
 
     // Approver: use assignedTo (MERG FM) if present; otherwise look up by role.

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ApprovalStepStatus, SubmissionStatus } from '@/types/enums';
+import { approverCheckError } from '@/lib/stepAuthorisation';
 
 export async function POST(
   request: NextRequest,
@@ -46,12 +47,13 @@ export async function POST(
     );
   }
 
-  // Enforce: current user's role must match the step's approverRole
-  if (user.role !== step.approverRole) {
-    return NextResponse.json(
-      { error: `This step requires role ${step.approverRole} but you are ${user.role}.` },
-      { status: 403 }
-    );
+  // Enforce: current user must be the intended approver for this step — the
+  // assigned person if the step has one (e.g. care-group FM), otherwise the role.
+  // Applies identically to approve, reject and info_request; no state is written
+  // and no audit event is created when this check fails.
+  const approverError = approverCheckError(step, user);
+  if (approverError) {
+    return NextResponse.json({ error: approverError }, { status: 403 });
   }
 
   const now = new Date();
