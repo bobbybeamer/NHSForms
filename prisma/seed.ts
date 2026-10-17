@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+import { guardDatabase } from './dbGuard';
 import { Role, SubmissionStatus, ApprovalStepStatus } from '../src/types/enums';
 import { WAIVER_BAND_THRESHOLDS, ADMIN_USER } from './build7Data';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasourceUrl: guardDatabase('seed') });
 
 async function main() {
   console.log('Seeding database...');

@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node node_modules/next/dist/bin/next dev",
+    "dev": "node scripts/local-db.mjs dev",
     "build": "node node_modules/next/dist/bin/next build",
     "start": "node node_modules/next/dist/bin/next start",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && tsx prisma/seed-if-empty.ts && npm run build"
+    "vercel-build": "prisma generate && prisma migrate deploy && tsx prisma/seed-if-empty.ts && npm run build",
+    "db:reset-local": "node scripts/local-db.mjs reset",
+    "db:which": "node scripts/local-db.mjs which"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -25,6 +27,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "embedded-postgres": "17.5.0-beta.15",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5"

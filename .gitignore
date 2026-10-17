@@ -47,3 +47,6 @@ prisma/dev.db-journal
 
 # Source documents from the client (Word/HTML originals) — kept local, not committed
 /Forms/
+
+# Private local development Postgres (npm run dev) — never committed
+/.local-postgres/

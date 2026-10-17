@@ -4,9 +4,10 @@
 // (A fresh database set up with `npx prisma migrate reset` gets the admin user
 // from seed.ts instead.)
 import { PrismaClient } from '@prisma/client';
+import { guardDatabase } from './dbGuard';
 import { ADMIN_USER } from './build7Data';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasourceUrl: guardDatabase('add-admin-user') });
 
 async function main() {
   const existing = await prisma.user.findUnique({ where: { email: ADMIN_USER.email } });

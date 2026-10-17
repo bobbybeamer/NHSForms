@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { assertSafeDatabase } from './dbTarget';
 
 // Connection string comes from DATABASE_URL (set by the Vercel Prisma Postgres
 // integration, or a local .env). If DATABASE_URL_POOLED is set — the optional
@@ -11,6 +12,9 @@ import { PrismaClient } from '@prisma/client';
 function databaseUrl(): string | undefined {
   const raw = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL;
   if (!raw) return undefined;
+  // Outside Vercel, refuse anything but a database on this computer — so local
+  // development can never read or change the hosted demo. See dbTarget.ts.
+  assertSafeDatabase(raw, 'app');
   try {
     const url = new URL(raw);
     if (!url.searchParams.has('connection_limit')) url.searchParams.set('connection_limit', '1');
