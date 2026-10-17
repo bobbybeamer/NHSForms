@@ -69,9 +69,11 @@ export default function LoginPage() {
     <div className="max-w-2xl mx-auto">
       {/* Prototype warning banner */}
       <div className="bg-amber-100 border border-amber-400 text-amber-900 px-4 py-3 rounded mb-6" role="alert">
-        <p className="font-semibold">Prototype only — demo login</p>
+        <p className="font-semibold">Demo sign-in — not secure</p>
         <p className="text-sm mt-1">
-          This is a prototype. Authentication is not secure. Do not enter real NHS data.
+          You choose a demo user below; there are no passwords and anyone can sign in as anyone.
+          This is for demonstrating the workflow only. Real NHS sign-on (single sign-on with your
+          NHS account) is planned for a later phase. Do not enter real NHS data.
         </p>
       </div>
 
