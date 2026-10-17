@@ -12,6 +12,7 @@ export enum Role {
   FINANCE_MANAGER = 'FINANCE_MANAGER',
   DIVISIONAL_LEAD = 'DIVISIONAL_LEAD',
   MERG_COMMITTEE = 'MERG_COMMITTEE',
+  ADMIN = 'ADMIN', // maintains thresholds/bands in /admin; never an approver
 }
 
 export enum SubmissionStatus {

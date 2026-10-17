@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Role, SubmissionStatus, ApprovalStepStatus } from '../src/types/enums';
+import { WAIVER_BAND_THRESHOLDS, ADMIN_USER } from './build7Data';
 
 const prisma = new PrismaClient();
 
@@ -7,6 +8,7 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean up existing data
+  await prisma.adminAuditEvent.deleteMany();
   await prisma.auditEvent.deleteMany();
   await prisma.approvalStep.deleteMany();
   await prisma.submission.deleteMany();
@@ -43,9 +45,10 @@ async function main() {
           'requires a Single Tender Action and an accompanying SFI Waiver. ' +
           'TO CONFIRM WITH CLIENT.',
       },
+      ...WAIVER_BAND_THRESHOLDS,
     ],
   });
-  console.log('Created 3 configurable thresholds');
+  console.log('Created 5 configurable thresholds');
 
   // Create form types
   const formType = await prisma.formType.create({
@@ -127,6 +130,9 @@ async function main() {
   });
 
   console.log('Created 7 demo users');
+
+  await prisma.user.create({ data: ADMIN_USER });
+  console.log('Created admin user (Alex Admin)');
 
   // New MERG-related users
   const fmCg1 = await prisma.user.create({ data: { name: 'Fatima Manager (CG1)', email: 'fm.cg1@nhs.net', role: Role.FINANCE_MANAGER, trust: 'York & Scarborough' } });

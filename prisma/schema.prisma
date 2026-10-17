@@ -20,6 +20,7 @@ model User {
   decisions      ApprovalStep[] @relation("DecidedBy")
   assignedSteps  ApprovalStep[] @relation("AssignedTo")
   auditEvents    AuditEvent[]
+  adminAuditEvents AdminAuditEvent[]
 }
 
 model FormType {
@@ -78,4 +79,21 @@ model Threshold {
   label     String         // human-readable name shown in admin UI
   comment   String         // explains units, legal basis, review cadence
   updatedAt DateTime @updatedAt
+}
+
+// System-level audit of admin changes (Build 7). Kept separate from AuditEvent,
+// which is submission-scoped: admin changes belong to no submission, and keeping
+// AuditEvent.submissionId required preserves the integrity of request histories.
+// Values are stored as text so later admin edits (chains, care groups, users)
+// can reuse this table without another migration.
+model AdminAuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id])
+  action     String   // e.g. "SETTING_UPDATED"
+  target     String   // setting key, e.g. "waiver_band_cfo_upper_inc_vat"
+  targetLabel String  // human-readable name at the time of the change
+  oldValue   String
+  newValue   String
+  createdAt  DateTime @default(now())
 }
