@@ -12,6 +12,10 @@ function roleLabel(role: string): string {
     CFO: 'CFO',
     EXEC_COMMITTEE: 'Exec Committee',
     TRUST_BOARD: 'Trust Board',
+    FINANCE_MANAGER: 'Finance Manager',
+    DIVISIONAL_LEAD: 'Divisional Lead',
+    MERG_COMMITTEE: 'MERG Committee',
+    ADMIN: 'Administrator',
   };
   return labels[role] ?? role;
 }
@@ -39,12 +43,14 @@ export default function Header() {
                 <p className="text-sm font-medium">{user.name}</p>
                 <p className="text-xs text-blue-200">{roleLabel(user.role)} &middot; {user.trust}</p>
               </div>
-              <Link
-                href="/admin"
-                className="text-blue-200 text-sm hover:text-white hidden sm:block"
-              >
-                Admin
-              </Link>
+              {user.role === 'ADMIN' && (
+                <Link
+                  href="/admin"
+                  className="text-blue-200 text-sm hover:text-white hidden sm:block"
+                >
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={logout}
                 className="bg-white text-[#005EB8] text-sm font-medium px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"

@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useUser } from '../UserContext';
+
+interface AdminAuditEvent {
+  id: string;
+  action: string;
+  target: string;
+  targetLabel: string;
+  oldValue: string;
+  newValue: string;
+  createdAt: string;
+  actor: { id: string; name: string };
+}
 
 interface Threshold {
   key: string;
@@ -18,8 +28,14 @@ function formatGBP(v: number) {
   }).format(v);
 }
 
-export default function AdminPage() {
-  const { user, loading } = useUser();
+function formatSetting(v: string) {
+  const n = Number(v);
+  return isNaN(n) ? v : formatGBP(n);
+}
+
+// Rendered only for ADMIN users — the server-side check is in page.tsx, and the
+// APIs this calls enforce ADMIN independently.
+export default function AdminPanel({ adminName }: { adminName: string }) {
   const [thresholds, setThresholds] = useState<Threshold[]>([]);
   const [fetching, setFetching] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
@@ -27,12 +43,21 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [auditEvents, setAuditEvents] = useState<AdminAuditEvent[]>([]);
+  const [auditLoaded, setAuditLoaded] = useState(false);
+
+  const loadAudit = () =>
+    fetch('/api/admin/audit')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { setAuditEvents(Array.isArray(data) ? data : []); setAuditLoaded(true); })
+      .catch(() => setAuditLoaded(true));
 
   useEffect(() => {
     fetch('/api/thresholds')
       .then((r) => r.json())
       .then((data) => { setThresholds(Array.isArray(data) ? data : []); setFetching(false); })
       .catch(() => setFetching(false));
+    loadAudit();
   }, []);
 
   const startEdit = (t: Threshold) => {
@@ -66,6 +91,7 @@ export default function AdminPage() {
       }
       const updated: Threshold = await res.json();
       setThresholds((prev) => prev.map((t) => (t.key === key ? updated : t)));
+      loadAudit();
       setEditing(null);
       setSaveSuccess(`${updated.label} updated to ${formatGBP(updated.value)}.`);
       setTimeout(() => setSaveSuccess(null), 4000);
@@ -75,8 +101,6 @@ export default function AdminPage() {
       setSaving(false);
     }
   };
-
-  if (loading) return <div className="text-gray-500">Loading...</div>;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -90,15 +114,8 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-gray-900">Configurable Thresholds</h1>
         <p className="text-sm text-gray-500 mt-1">
           Changes take effect immediately for all new submissions. Existing submissions
-          are not re-routed. Logged in as: <strong>{user?.name ?? '—'}</strong>
+          are not re-routed. Every change is recorded below. Logged in as administrator: <strong>{adminName}</strong>
         </p>
-      </div>
-
-      {/* Prototype warning */}
-      <div className="bg-amber-50 border border-amber-400 rounded p-3 mb-6 text-sm text-amber-900">
-        <strong>Prototype — no access control on this screen.</strong> In production,
-        restrict to nominated admin users only.
-        {/* TODO: replace with NHS SSO role-based access control */}
       </div>
 
       {saveSuccess && (
@@ -176,6 +193,45 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+
+      <section aria-labelledby="admin-audit-heading" className="mt-10">
+        <h2 id="admin-audit-heading" className="text-lg font-bold text-gray-900 mb-1">Recent admin changes</h2>
+        <p className="text-sm text-gray-600 mb-3">The 50 most recent changes to system settings, newest first.</p>
+        {!auditLoaded ? (
+          <p className="text-gray-500">Loading changes…</p>
+        ) : auditEvents.length === 0 ? (
+          <p className="text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-5">No admin changes recorded yet.</p>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <caption className="sr-only">Recent admin changes: when, who, setting, old value and new value</caption>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-4 py-2 text-left font-semibold text-gray-700">When</th>
+                  <th scope="col" className="px-4 py-2 text-left font-semibold text-gray-700">Who</th>
+                  <th scope="col" className="px-4 py-2 text-left font-semibold text-gray-700">Setting</th>
+                  <th scope="col" className="px-4 py-2 text-right font-semibold text-gray-700">Old value</th>
+                  <th scope="col" className="px-4 py-2 text-right font-semibold text-gray-700">New value</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {auditEvents.map((e) => (
+                  <tr key={e.id}>
+                    <td className="px-4 py-2 whitespace-nowrap text-gray-700">{new Date(e.createdAt).toLocaleString('en-GB')}</td>
+                    <td className="px-4 py-2 text-gray-900">{e.actor?.name}</td>
+                    <td className="px-4 py-2 text-gray-900">
+                      {e.targetLabel}
+                      <span className="block text-xs font-mono text-gray-600">{e.target}</span>
+                    </td>
+                    <td className="px-4 py-2 text-right whitespace-nowrap text-gray-700">{formatSetting(e.oldValue)}</td>
+                    <td className="px-4 py-2 text-right whitespace-nowrap font-semibold text-gray-900">{formatSetting(e.newValue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -21,6 +21,10 @@ function roleLabel(role: string): string {
     CFO: 'CFO',
     EXEC_COMMITTEE: 'Exec Committee',
     TRUST_BOARD: 'Trust Board',
+    FINANCE_MANAGER: 'Finance Manager',
+    DIVISIONAL_LEAD: 'Divisional Lead',
+    MERG_COMMITTEE: 'MERG Committee',
+    ADMIN: 'Administrator',
   };
   return labels[role] ?? role;
 }
