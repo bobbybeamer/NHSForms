@@ -46,6 +46,16 @@ npx prisma db seed
 
 This creates the SQLite database at `prisma/dev.db` and populates it with demo users and sample submissions.
 
+#### Upgrading an existing database to Build 7 (keeps your data)
+
+```bash
+npx prisma migrate deploy          # adds the AdminAuditEvent table + the two waiver band settings
+npx prisma generate                # refreshes the Prisma client for the new table
+npx tsx prisma/add-admin-user.ts   # adds Alex Admin; safe to run twice
+```
+
+None of these delete or reset data. To start from a clean demo dataset instead, `npx prisma migrate reset` drops the database, re-applies all migrations and re-seeds (including Alex Admin) — it **wipes** existing submissions.
+
 ### 3. Start the dev server
 
 ```bash
@@ -69,6 +79,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | Cara CFO | CFO | Final approver for waivers £135,018–£500,000 |
 | Eli Exec | Exec Committee | Final approver for waivers £500,000–£2,500,000 |
 | Trudy Board | Trust Board | Final approver for waivers over £2,500,000 |
+
+### Administrator (Build 7)
+
+| Name | Email | Role | Use case |
+|---|---|---|---|
+| Alex Admin | alex.admin@nhs.net | Administrator | Only user who can open `/admin` and change thresholds/bands; never an approver |
 
 ### MERG approvers (Build 2)
 
@@ -101,12 +117,14 @@ To test the MERG approval flow:
 
 Defined in `src/config/waiverRouting.ts`. All waivers follow: **Procurement BP → Finance → [final approver]**.
 
-| Value inc VAT | Final approver |
+| Value inc VAT (seeded boundaries) | Final approver |
 |---|---|
-| < £135,018 | Director of Procurement |
-| £135,018–£500,000 | CFO |
-| £500,000–£2,500,000 | Exec Committee |
-| > £2,500,000 | Trust Board |
+| < £135,018 (`pa23_inc_vat`) | Director of Procurement |
+| £135,018 to < £500,000 (`waiver_band_cfo_upper_inc_vat`) | CFO |
+| £500,000 to < £2,500,000 (`waiver_band_exec_upper_inc_vat`) | Exec Committee |
+| ≥ £2,500,000 | Trust Board |
+
+All three boundaries are read from the database since Build 7 — none are hardcoded.
 
 ### MERG Equipment Request routing
 
@@ -118,15 +136,17 @@ Step 1 (Finance Manager) is assigned to the specific FM for the requester's care
 
 ### Configurable thresholds (Build 3)
 
-All routing threshold values are stored in the `Threshold` database table and editable via the `/admin` screen. The three seeded values are:
+All routing threshold values are stored in the `Threshold` database table and editable via the `/admin` screen (ADMIN only since Build 7). The five seeded values are:
 
 | DB key | Seeded value | Use |
 |---|---|---|
 | `pa23_inc_vat` | £135,018 | Waiver band boundary (Director vs CFO) and MERG ex-VAT proxy |
 | `merg_business_case_ex_vat` | £50,000 | MERG: adds Exec Committee step |
 | `merg_sta_ex_vat` | £25,000 | MERG: triggers STA/Waiver flag on direct award |
+| `waiver_band_cfo_upper_inc_vat` | £500,000 | Waiver: CFO → Exec Committee boundary (Build 7) |
+| `waiver_band_exec_upper_inc_vat` | £2,500,000 | Waiver: Exec Committee → Trust Board boundary (Build 7) |
 
-No hardcoded threshold values exist in `waiverRouting.ts` or `mergRouting.ts`. Both routing functions receive the threshold as a parameter fetched from the database at request time.
+No hardcoded threshold values exist in `waiverRouting.ts` or `mergRouting.ts`. Routing functions receive every boundary as a parameter fetched from the database at request time. If a required setting is missing, submission is refused with a clear 500 error rather than routed on a fallback value. The admin API rejects edits that would put the waiver bands out of order (PA23 < CFO upper < Exec upper).
 
 ---
 
@@ -154,6 +174,9 @@ src/
       submissions/[id]/        # Get submission detail
       submissions/[id]/decide/ # Approve / reject / request info
       submissions/[id]/generate-email/ # Generate email draft + audit event
+      submissions/[id]/respond/ # Requester responds to info request + resubmits
+      thresholds/              # GET all settings (open); [key] PATCH (ADMIN only, audited)
+      admin/audit/             # Recent admin changes (ADMIN only)
       approvals/               # Submissions waiting for current user
     dashboard/                 # Home screen (start new Waiver or MERG)
     login/                     # Demo user selection
@@ -162,6 +185,7 @@ src/
     my-requests/               # Requester's own submissions (both types)
     approvals/                 # Approver's queue (both types)
     submissions/[id]/          # Submission detail + decision panel
+    admin/                     # Server-side ADMIN gate (page.tsx) + AdminPanel (settings, recent changes)
   config/
     thresholds.ts              # pa23ExVatProxy helper (no constants — values in DB)
     waiverRouting.ts           # Waiver chain logic (parameterised)
@@ -172,13 +196,28 @@ src/
   lib/
     prisma.ts                  # Prisma client singleton
     auth.ts                    # Client-side auth helpers
+    adminAuth.ts               # Server-side ADMIN check (page + APIs)
+    stepAuthorisation.ts       # Per-step approver rules (Build 5/6)
   types/
     enums.ts                   # Role/Status TypeScript enums
 prisma/
   schema.prisma                # Database schema
-  seed.ts                      # Demo data
+  seed.ts                      # Demo data (wipes and recreates)
+  build7Data.ts                # Waiver band rows + admin user shared by seed and upgrade script
+  add-admin-user.ts            # Adds Alex Admin to an existing DB without touching other data
   dev.db                       # SQLite database (created on migrate)
 ```
+
+---
+
+## Admin access control and auditing (Build 7)
+
+- **Role:** `ADMIN` (roles are plain strings in SQLite, so adding it needed no schema change). Demo user: Alex Admin.
+- **`/admin`** is a server component: it looks up the user from the login cookie and renders the admin panel only for `ADMIN`; everyone else gets a "Not authorised" page. The demo role-switcher login is unchanged — real NHS SSO is a later build.
+- **`PATCH /api/thresholds/[key]`** — `ADMIN` only (403 otherwise, 401 if not logged in), enforced in the route regardless of UI. `GET /api/thresholds` stays open because the forms need it.
+- **Auditing:** each successful edit writes an `AdminAuditEvent` (actor, setting key and label, old value, new value, timestamp) in the same transaction as the change. `GET /api/admin/audit` (`ADMIN` only) returns the 50 most recent; shown as "Recent admin changes" in `/admin`.
+- **Why a separate table:** `AuditEvent` is submission-scoped (`submissionId` required). Admin changes belong to no submission; a separate `AdminAuditEvent` table keeps request histories' integrity intact and avoids nullable-FK special cases in every submission audit query. Values are stored as text so later admin edits (chains, care groups, users) can reuse the table.
+- **In-flight protection** is unchanged: approval steps are snapshotted at submission, so changing a band affects only new submissions.
 
 ---
 
@@ -262,9 +301,7 @@ The following features are out of scope for this prototype:
 - **Multi-trust rules** — All demo users are in one trust; cross-trust logic is not implemented
 - **PDF generation** — No PDF export of submitted forms
 - **Re-submission after INFO_REQUESTED** — Requester cannot formally respond via the app; must contact the approver directly
-- **Admin access control** — `/admin` is accessible to any logged-in user; role-based restriction is a later build
-- **Admin: approval chain / care-group / user editing** — Only the three threshold values are editable via `/admin`
-- **Admin audit trail** — Threshold changes are not recorded in the audit trail
+- **Admin: approval chain / care-group / user editing** — Only the five threshold/band values are editable via `/admin`
 - **Accessibility audit** — Basic WCAG effort has been made but a full audit has not been done
 
 ---
@@ -279,3 +316,4 @@ The following features are out of scope for this prototype:
 | Build 4 | Email generation: approval notification + MERG SOP templates (quote request, concluded purchasing, completed leasing); recipient engine with SHYPS/charity/URN/maintenance-route conditional logic; new MERG form fields (SHYPS, URN); `EMAIL_GENERATED` audit events |
 | Build 5 | Per-step authorisation: decide and notification-email endpoints check the step's assigned approver (or role, for role-only steps), not just the role; USER_GUIDE corrections (MERG step list, care-group rule, leasing recipients) |
 | Build 6 | Request-more-information loop: requester responds and resubmits to the same step (`/respond`), full audit trail; notification email can also be generated by the requester or a prior approver |
+| Build 7 | ADMIN role (Alex Admin); `/admin` and threshold PATCH restricted to ADMIN; `AdminAuditEvent` table and "Recent admin changes" view; £500k/£2.5m waiver bands moved into the database and editable in `/admin` (migration `20261017000000_admin_audit_and_waiver_bands`) |
