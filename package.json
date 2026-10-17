@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev",
     "build": "node node_modules/next/dist/bin/next build",
-    "start": "node node_modules/next/dist/bin/next start"
+    "start": "node node_modules/next/dist/bin/next start",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && tsx prisma/seed-if-empty.ts && npm run build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
