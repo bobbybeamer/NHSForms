@@ -43,3 +43,6 @@ next-env.d.ts
 # Prisma SQLite database (generated — run prisma migrate dev to recreate)
 prisma/dev.db
 prisma/dev.db-journal
+
+# Source documents from the client (Word/HTML originals) — kept local, not committed
+/Forms/
