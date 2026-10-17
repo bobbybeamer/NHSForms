@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { computeApprovalChain } from '@/config/waiverRouting';
+import { computeApprovalChain, waiverBandSettingsFromRows, WAIVER_SETTING_KEYS } from '@/config/waiverRouting';
 import { computeMergApprovalChain } from '@/config/mergRouting';
 import { CARE_GROUP_FM_EMAIL } from '@/config/careGroups';
 import { SubmissionStatus, ApprovalStepStatus, Role } from '@/types/enums';
 
-// Fetch a threshold from the database. Falls back to the given default if the
-// record is somehow missing (should not happen after seeding).
-async function getThreshold(key: string, fallback: number): Promise<number> {
+// Routing values come only from the database. If a required setting is
+// missing we refuse the submission rather than route on a hardcoded fallback.
+class MissingSettingError extends Error {}
+
+async function getRequiredThreshold(key: string): Promise<number> {
   const row = await prisma.threshold.findUnique({ where: { key } });
-  return row?.value ?? fallback;
+  if (!row) throw new MissingSettingError(key);
+  return row.value;
 }
 
 export async function GET(request: NextRequest) {
@@ -57,6 +60,25 @@ export async function POST(request: NextRequest) {
       ? fieldValues
       : (() => { try { return JSON.parse(fieldValues ?? '{}'); } catch { return {}; } })();
 
+    // Compute the approval chain BEFORE creating anything, so a missing setting
+    // cannot leave a half-created submission behind.
+    let chain: string[] = [];
+    if (!isDraft) {
+      if (formTypeKey === 'merg_equipment') {
+        const businessCaseThreshold = await getRequiredThreshold('merg_business_case_ex_vat');
+        const totalCostExVat = parsedFields.totalEstimatedCost ?? 0;
+        chain = computeMergApprovalChain(totalCostExVat, businessCaseThreshold);
+      } else {
+        // All three waiver band boundaries come from the database.
+        const rows = await prisma.threshold.findMany({
+          where: { key: { in: Object.values(WAIVER_SETTING_KEYS) } },
+        });
+        const settings = waiverBandSettingsFromRows(rows);
+        if (!settings) throw new MissingSettingError('waiver band settings');
+        chain = computeApprovalChain(totalValueIncVat ?? 0, settings);
+      }
+    }
+
     // NOTE: For MERG submissions, totalValueIncVat stores the total estimated
     // project cost (ex VAT). MERG has no separate VAT field — confirm with client.
     const submission = await prisma.submission.create({
@@ -71,21 +93,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!isDraft) {
-      let chain: string[];
-
-      if (formTypeKey === 'merg_equipment') {
-        // Fetch business-case threshold from DB — no hardcoded value here.
-        const businessCaseThreshold = await getThreshold('merg_business_case_ex_vat', 50_000);
-        const totalCostExVat = parsedFields.totalEstimatedCost ?? 0;
-        chain = computeMergApprovalChain(totalCostExVat, businessCaseThreshold);
-      } else {
-        // Fetch PA23 threshold from DB — this drives the Waiver final-approver band.
-        // Fallback only fires if the DB row is absent (should never happen post-seed).
-        // The 135_018 here is a safety net, NOT a routing policy value.
-        const pa23IncVat = await getThreshold('pa23_inc_vat', 135_018);
-        chain = computeApprovalChain(totalValueIncVat ?? 0, pa23IncVat);
-      }
-
       for (let i = 0; i < chain.length; i++) {
         // For MERG step 1 (FINANCE_MANAGER), look up the specific FM by care group.
         let assignedToId: string | null = null;
@@ -133,6 +140,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(fullSubmission, { status: 201 });
   } catch (error) {
+    if (error instanceof MissingSettingError) {
+      console.error('Create submission: missing routing setting', error.message);
+      return NextResponse.json(
+        { error: `Routing setting missing from the database (${error.message}). Apply the latest migration — see README.` },
+        { status: 500 }
+      );
+    }
     console.error('Create submission error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

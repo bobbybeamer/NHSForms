@@ -6,6 +6,8 @@ import { useUser } from '../../UserContext';
 import {
   JUSTIFICATION_REASONS,
   computeApprovalChain,
+  waiverBandSettingsFromRows,
+  type WaiverBandSettings,
 } from '@/config/waiverRouting';
 
 const TRUSTS = ['York & Scarborough', 'HUTH', 'NLAG'];
@@ -55,9 +57,9 @@ export default function NewWaiverPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Pre-render default only — overwritten immediately by /api/thresholds fetch below.
-  // Not a policy value: do not use this as a routing boundary.
-  const [pa23Threshold, setPa23Threshold] = useState<number>(135_018);
+  // All band boundaries come from /api/thresholds (the database). Until they
+  // load, no preview or threshold warning is shown — there is no default value.
+  const [bandSettings, setBandSettings] = useState<WaiverBandSettings | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,15 +70,14 @@ export default function NewWaiverPage() {
     }
   }, [user, loading, router]);
 
-  // Fetch live threshold from database — drives both the banner and approval chain preview.
+  // Fetch live band settings from database — drive both the banner and approval chain preview.
   useEffect(() => {
     fetch('/api/thresholds')
       .then((r) => r.json())
       .then((rows: { key: string; value: number }[]) => {
-        const pa23 = rows.find((r) => r.key === 'pa23_inc_vat');
-        if (pa23) setPa23Threshold(pa23.value);
+        setBandSettings(waiverBandSettingsFromRows(Array.isArray(rows) ? rows : []));
       })
-      .catch(() => { /* keep default */ });
+      .catch(() => { /* no preview until settings load */ });
   }, []);
 
   const purchaseNum = parseFloat(form.purchaseValueExVat) || 0;
@@ -84,12 +85,13 @@ export default function NewWaiverPage() {
   const totalValueIncVat = purchaseNum + vatNum;
 
   const approvalChain = useMemo(
-    () => computeApprovalChain(totalValueIncVat, pa23Threshold),
-    [totalValueIncVat, pa23Threshold]
+    () => (bandSettings ? computeApprovalChain(totalValueIncVat, bandSettings) : null),
+    [totalValueIncVat, bandSettings]
   );
+  const pa23Threshold = bandSettings?.pa23ThresholdIncVat ?? null;
 
   const wordCount = countWords(form.waiverCircumstances);
-  const overThreshold = totalValueIncVat >= pa23Threshold;
+  const overThreshold = pa23Threshold !== null && totalValueIncVat >= pa23Threshold;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -359,7 +361,7 @@ export default function NewWaiverPage() {
             >
               <p className="font-semibold">Above the procurement threshold</p>
               <p className="text-sm mt-1">
-                This value ({formatGBP(totalValueIncVat)}) is at or above the PA23 threshold ({formatGBP(pa23Threshold)}).
+                This value ({formatGBP(totalValueIncVat)}) is at or above the PA23 threshold ({formatGBP(pa23Threshold ?? 0)}).
                 A direct-award waiver requires a PA23 transparency notice and a mandatory standstill period.
                 Confirm with Procurement before proceeding.
               </p>
@@ -497,7 +499,7 @@ export default function NewWaiverPage() {
         </fieldset>
 
         {/* Approval chain preview */}
-        {totalValueIncVat > 0 && (
+        {totalValueIncVat > 0 && approvalChain && (
           <div className="bg-blue-50 border border-blue-200 rounded p-4">
             <p className="text-sm font-semibold text-[#005EB8] mb-1">Approval chain preview</p>
             <p className="text-sm text-gray-700">
