@@ -15,7 +15,7 @@ import {
   buildConcludedPurchasingEmail,
   buildConcludedLeasingEmail,
 } from '@/config/emailTemplates';
-import { approverCheckError } from '@/lib/stepAuthorisation';
+import { canGenerateNotification } from '@/lib/stepAuthorisation';
 
 const VALID_TYPES = ['notification', 'quote_request', 'concluded_purchasing', 'concluded_leasing'];
 
@@ -80,11 +80,13 @@ export async function POST(
       );
     }
 
-    // Only the intended approver of the active step may generate its
-    // notification email — same rule as the decide endpoint.
-    const approverError = approverCheckError(activeStep, actor);
-    if (approverError) {
-      return NextResponse.json({ error: approverError }, { status: 403 });
+    // Wider than decisions: the active step's approver, the requester, or a
+    // prior approver on this submission may generate the notification.
+    if (!canGenerateNotification(activeStep, submission.approvalSteps, submission.requesterId, actor)) {
+      return NextResponse.json(
+        { error: 'Only the approver for this step, the requester, or someone who approved an earlier step can generate this notification email.' },
+        { status: 403 }
+      );
     }
 
     // Approver: use assignedTo (MERG FM) if present; otherwise look up by role.

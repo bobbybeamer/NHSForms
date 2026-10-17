@@ -10,6 +10,7 @@ interface ApprovalStep {
   sequence: number;
   approverRole: string;
   status: string;
+  decisionNote?: string | null;
 }
 
 interface Submission {
@@ -126,6 +127,30 @@ export default function MyRequestsPage() {
         </div>
       </div>
 
+      {/* Requests returned for more information — the requester needs to act */}
+      {!fetching && submissions.some((s) => s.status === 'INFO_REQUESTED') && (
+        <section aria-labelledby="action-needed-heading" className="bg-amber-50 border border-amber-300 rounded-xl p-5 mb-6">
+          <h2 id="action-needed-heading" className="font-semibold text-amber-900 mb-3">Action needed: more information requested</h2>
+          <ul className="space-y-3">
+            {submissions.filter((s) => s.status === 'INFO_REQUESTED').map((s) => {
+              const step = s.approvalSteps.find((st) => st.status === 'INFO_REQUESTED');
+              return (
+                <li key={s.id} className="text-sm text-gray-800">
+                  <span className="font-mono">{s.id.slice(-8).toUpperCase()}</span>
+                  {step && <> — step {step.sequence}, {roleLabel(step.approverRole)}</>}
+                  {step?.decisionNote && (
+                    <blockquote className="mt-1 border-l-4 border-amber-400 bg-white px-3 py-1">{step.decisionNote}</blockquote>
+                  )}
+                  <Link href={`/submissions/${s.id}`} className="inline-block mt-1 font-medium text-[#005EB8] underline">
+                    Respond and resubmit<span className="sr-only"> request {s.id.slice(-8).toUpperCase()}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       {fetching ? (
         <p className="text-gray-500">Loading submissions...</p>
       ) : submissions.length === 0 ? (
@@ -196,7 +221,8 @@ export default function MyRequestsPage() {
                         href={`/submissions/${s.id}`}
                         className="text-sm text-[#005EB8] hover:underline"
                       >
-                        View
+                        {s.status === 'INFO_REQUESTED' ? 'Respond' : 'View'}
+                        <span className="sr-only"> request {ref}</span>
                       </Link>
                     </td>
                   </tr>

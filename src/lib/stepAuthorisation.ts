@@ -27,6 +27,28 @@ export function isIntendedApprover(step: StepApprover, user: Actor): boolean {
   return user.role === step.approverRole;
 }
 
+export interface ChainStep {
+  sequence: number;
+  status: string;
+  decidedById?: string | null;
+}
+
+// Notification email for the active step is a convenience action, so it is
+// wider than decisions: the active step's approver, the requester, or anyone
+// who has already approved an earlier step on this submission.
+export function canGenerateNotification(
+  activeStep: StepApprover & ChainStep,
+  steps: ChainStep[],
+  requesterId: string,
+  user: Actor
+): boolean {
+  if (isIntendedApprover(activeStep, user)) return true;
+  if (user.id === requesterId) return true;
+  return steps.some(
+    (s) => s.sequence < activeStep.sequence && s.status === 'APPROVED' && s.decidedById === user.id
+  );
+}
+
 // Returns null if the user may act on the step, otherwise a 403 error message.
 export function approverCheckError(step: StepApprover, user: Actor): string | null {
   if (isIntendedApprover(step, user)) return null;

@@ -166,6 +166,16 @@ export async function POST(
         detail: `Step ${step.sequence}: ${user.name} (${user.role}) requested more information. Note: ${note ?? 'No note'}.`,
       },
     });
+
+    const requester = await prisma.user.findUnique({ where: { id: step.submission.requesterId } });
+    await prisma.auditEvent.create({
+      data: {
+        submissionId,
+        actorId: userId,
+        action: 'RETURNED_TO_REQUESTER',
+        detail: `${user.name} returned the submission to ${requester?.name ?? 'the requester'} to respond. Step ${step.sequence} is paused and will re-activate for the same approver on resubmission.`,
+      },
+    });
   }
 
   const updatedSubmission = await prisma.submission.findUnique({
@@ -174,7 +184,10 @@ export async function POST(
       requester: { select: { id: true, name: true } },
       approvalSteps: {
         orderBy: { sequence: 'asc' },
-        include: { decidedBy: { select: { id: true, name: true } } },
+        include: {
+          decidedBy:  { select: { id: true, name: true } },
+          assignedTo: { select: { id: true, name: true, email: true } },
+        },
       },
       auditEvents: {
         orderBy: { createdAt: 'asc' },
